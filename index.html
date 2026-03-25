@@ -199,10 +199,16 @@ function ProgressBar({ used, max, accent }) {
   );
 }
 
-function ChemCard({ item, colors, onToggle, expanded }) {
+function ChemCard({ item, colors, onToggle, expanded, onStatusToggle, onEdit, onDelete }) {
   const used = parseRollCount(item.rolls);
   const max = parseMaxRolls(item.maxRolls);
   const isFresh = item.status === "Fresh";
+
+  const actionBtnStyle = (color, borderColor) => ({
+    flex: 1, padding: "7px 0", borderRadius: 7, border: `1px solid ${borderColor}`,
+    background: "transparent", color: color, cursor: "pointer", fontSize: 11,
+    fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.04em",
+  });
 
   return (
     <div
@@ -253,11 +259,22 @@ function ChemCard({ item, colors, onToggle, expanded }) {
             </div>
           )}
           {item.extra && (
-            <div>
+            <div style={{ marginBottom: 10 }}>
               <span style={{ color: "#71717a", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes</span>
               <div style={{ color: "#fbbf24", marginTop: 2 }}>{item.extra}</div>
             </div>
           )}
+          <div style={{ display: "flex", gap: 8, marginTop: 10 }} onClick={e => e.stopPropagation()}>
+            <button onClick={onStatusToggle} style={actionBtnStyle(isFresh ? "#ef4444" : "#4ade80", isFresh ? "#7f1d1d" : "#14532d")}>
+              {isFresh ? "DISCARD" : "REACTIVATE"}
+            </button>
+            <button onClick={onEdit} style={actionBtnStyle("#818cf8", "#312e81")}>
+              EDIT
+            </button>
+            <button onClick={onDelete} style={actionBtnStyle("#f87171", "#7f1d1d")}>
+              DELETE
+            </button>
+          </div>
         </div>
       )}
     </div>
@@ -332,6 +349,81 @@ function AddBatchModal({ onClose, onAdd, nextId }) {
   );
 }
 
+function EditBatchModal({ item, onClose, onSave }) {
+  const [form, setForm] = useState({ ...item });
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #3f3f46",
+    background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", boxSizing: "border-box",
+    fontFamily: "'JetBrains Mono', monospace",
+  };
+  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 12, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
+      onClick={onClose}>
+      <div style={{ background: "#09090b", borderRadius: 16, padding: 24, maxWidth: 440, width: "100%", border: "1px solid #27272a", maxHeight: "90vh", overflowY: "auto" }}
+        onClick={e => e.stopPropagation()}>
+        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 20, fontFamily: "'Space Mono', monospace" }}>Edit Batch</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <label style={labelStyle}>Kit</label>
+            <select value={form.kit} onChange={e => set("kit", e.target.value)} style={inputStyle}>
+              {["C41", "ECN-2", "E6", "B&W"].map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Chemistry</label>
+            <select value={form.chem} onChange={e => set("chem", e.target.value)} style={inputStyle}>
+              {CHEM_ORDER.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Mix Date</label>
+            <input placeholder="DD/MM/YYYY" value={form.mixDate} onChange={e => set("mixDate", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Max Rolls</label>
+            <input placeholder="e.g. 10" value={form.maxRolls} onChange={e => set("maxRolls", e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Brand / Notes</label>
+          <input placeholder="e.g. Photon, Kodak, DIY..." value={form.notes} onChange={e => set("notes", e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Status</label>
+          <select value={form.status} onChange={e => set("status", e.target.value)} style={inputStyle}>
+            <option value="Fresh">Active (Fresh)</option>
+            <option value="Discarded">Discarded</option>
+          </select>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Roll Log</label>
+          <textarea placeholder="e.g. 5 on 25.03.26, 3 on 27.03.26" value={form.rolls} onChange={e => set("rolls", e.target.value)}
+            style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Additional Notes</label>
+          <input value={form.extra} onChange={e => set("extra", e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+          <button onClick={onClose}
+            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46", background: "transparent", color: "#a1a1aa", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
+            Cancel
+          </button>
+          <button
+            onClick={() => { onSave(form); onClose(); }}
+            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: "#fafafa", color: "#09090b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [data, setData] = useState(INITIAL_DATA);
   const [filterKit, setFilterKit] = useState("All");
@@ -339,6 +431,8 @@ function App() {
   const [searchQ, setSearchQ] = useState("");
   const [expanded, setExpanded] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
+  const [editItem, setEditItem] = useState(null);
   const [sortBy, setSortBy] = useState("date_desc");
 
   useEffect(() => {
@@ -360,6 +454,17 @@ function App() {
   }, []);
 
   const handleAdd = (batch) => save([...data, batch]);
+
+  const handleEdit = (updatedItem) => {
+    save(data.map(d => d.id === updatedItem.id ? updatedItem : d));
+  };
+
+  const handleDelete = (id) => {
+    if (window.confirm("Delete this batch? This cannot be undone.")) {
+      setExpanded(null);
+      save(data.filter(d => d.id !== id));
+    }
+  };
 
   const handleStatusToggle = (id) => {
     save(data.map(d => d.id === id ? { ...d, status: d.status === "Fresh" ? "Discarded" : "Fresh" } : d));
@@ -475,25 +580,16 @@ function App() {
           {filtered.map(item => {
             const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
             return (
-              <div key={item.id} style={{ position: "relative" }}>
+              <div key={item.id}>
                 <ChemCard
                   item={item}
                   colors={colors}
                   expanded={expanded === item.id}
                   onToggle={() => setExpanded(expanded === item.id ? null : item.id)}
+                  onStatusToggle={() => handleStatusToggle(item.id)}
+                  onEdit={() => { setEditItem(item); setShowEdit(true); }}
+                  onDelete={() => handleDelete(item.id)}
                 />
-                {expanded === item.id && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleStatusToggle(item.id); }}
-                    style={{
-                      position: "absolute", top: 14, right: 14, fontSize: 11, padding: "4px 10px",
-                      borderRadius: 6, border: "1px solid #3f3f46", background: "transparent",
-                      color: item.status === "Fresh" ? "#ef4444" : "#4ade80", cursor: "pointer",
-                      fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
-                    }}>
-                    {item.status === "Fresh" ? "DISCARD" : "REACTIVATE"}
-                  </button>
-                )}
               </div>
             );
           })}
@@ -512,6 +608,13 @@ function App() {
           onClose={() => setShowAdd(false)}
           onAdd={handleAdd}
           nextId={Math.max(...data.map(d => d.id), 0) + 1}
+        />
+      )}
+      {showEdit && editItem && (
+        <EditBatchModal
+          item={editItem}
+          onClose={() => { setShowEdit(false); setEditItem(null); }}
+          onSave={handleEdit}
         />
       )}
     </div>
