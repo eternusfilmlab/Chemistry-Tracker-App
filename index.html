@@ -336,19 +336,19 @@ export default function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [sortBy, setSortBy] = useState("date_desc");
 
-  const loadStored = useCallback(async () => {
-    try {
-      const res = await window.storage.get("chem-tracker-data");
-      if (res && res.value) setData(JSON.parse(res.value));
-    } catch { /* first load */ }
-  }, []);
+  const loadStored = useCallback(() => {
+  try {
+    const stored = localStorage.getItem("chem-tracker-data");
+    if (stored) setData(JSON.parse(stored));
+  } catch {}
+}, []);
 
   useEffect(() => { loadStored(); }, [loadStored]);
 
-  const save = useCallback(async (newData) => {
-    setData(newData);
-    try { await window.storage.set("chem-tracker-data", JSON.stringify(newData)); } catch {}
-  }, []);
+  const save = useCallback((newData) => {
+  setData(newData);
+  try { localStorage.setItem("chem-tracker-data", JSON.stringify(newData)); } catch {}
+}, []);
 
   const handleAdd = (batch) => save([...data, batch]);
 
