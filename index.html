@@ -13,6 +13,71 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { background: #09090b; color: #fafafa; font-family: 'Space Mono', 'JetBrains Mono', monospace; }
   #root { width: 100%; min-height: 100vh; }
+
+  .app-header {
+    padding: 14px 24px;
+    border-bottom: 1px solid #18181b;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #09090b;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .header-buttons {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .main-container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 20px 20px 80px;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .app-header {
+      padding: 10px 16px;
+    }
+    .app-header h1 {
+      font-size: 17px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .main-container {
+      padding: 12px 12px 60px;
+    }
+    .stats-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .app-header {
+      padding: 10px 12px;
+    }
+    .app-header h1 {
+      font-size: 15px;
+    }
+    .header-buttons {
+      width: 100%;
+      justify-content: flex-end;
+    }
+  }
 </style>
 
 </head>
@@ -899,16 +964,12 @@ function App() {
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
       {/* ── Header ── */}
-      <header style={{
-        padding: "14px 24px", borderBottom: "1px solid #18181b",
-        display: "flex", alignItems: "center", justifyContent: "space-between",
-        background: "#09090b", position: "sticky", top: 0, zIndex: 50,
-      }}>
+      <header className="app-header">
         <div>
           <div style={{ fontSize: 10, color: "#52525b", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>ETERNUS FILM</div>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.01em" }}>Chemistry Tracker</h1>
         </div>
-        <div style={{ display: "flex", gap: 8 }}>
+        <div className="header-buttons">
           <button onClick={exportCSV} style={{
             padding: "8px 14px", borderRadius: 8, border: "1px solid #27272a",
             background: "#18181b", color: "#a1a1aa", fontSize: 11, cursor: "pointer",
@@ -922,10 +983,10 @@ function App() {
         </div>
       </header>
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 20px 80px" }}>
+      <div className="main-container">
 
         {/* ── Stats Cards ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 24 }}>
+        <div className="stats-grid">
           <StatCard value={freshCount}   label="Active"      valueColor="#4ade80" bg="#052e16" />
           <StatCard value={archivedCount} label="Archived"   valueColor="#71717a" bg="#18181b" />
           <StatCard value={data.length}  label="Batches"     valueColor="#fafafa" bg="#18181b" />
