@@ -2,10 +2,18 @@
 <html>
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chemistry Tracker</title>
 
 <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #09090b; color: #fafafa; font-family: 'Space Mono', 'JetBrains Mono', monospace; }
+  #root { width: 100%; min-height: 100vh; }
+</style>
 
 </head>
 
@@ -15,8 +23,7 @@
 
 <script type="text/babel">
 
-// PASTE YOUR CLAUDE JSX HERE
- const { useState, useEffect, useCallback } = React;
+const { useState, useEffect, useCallback } = React;
 
 const INITIAL_DATA = [
   {id:1,kit:"C41",chem:"Developer",mixDate:"17/04/2025",maxRolls:"10",notes:"PHOTON",status:"Discarded",rolls:"8 on 17.04.25, 2 on 18.04.25",extra:""},
@@ -325,7 +332,7 @@ function AddBatchModal({ onClose, onAdd, nextId }) {
   );
 }
 
-export default function App() {
+function App() {
   const [data, setData] = useState(INITIAL_DATA);
   const [filterKit, setFilterKit] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
@@ -334,19 +341,23 @@ export default function App() {
   const [showAdd, setShowAdd] = useState(false);
   const [sortBy, setSortBy] = useState("date_desc");
 
-  const loadStored = useCallback(() => {
-  try {
-    const stored = localStorage.getItem("chem-tracker-data");
-    if (stored) setData(JSON.parse(stored));
-  } catch {}
-}, []);
-
-  useEffect(() => { loadStored(); }, [loadStored]);
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem("chem-tracker-data");
+      if (stored) setData(JSON.parse(stored));
+    } catch (e) {
+      console.error("Failed to load data:", e);
+    }
+  }, []);
 
   const save = useCallback((newData) => {
-  setData(newData);
-  try { localStorage.setItem("chem-tracker-data", JSON.stringify(newData)); } catch {}
-}, []);
+    setData(newData);
+    try {
+      localStorage.setItem("chem-tracker-data", JSON.stringify(newData));
+    } catch (e) {
+      console.error("Failed to save data:", e);
+    }
+  }, []);
 
   const handleAdd = (batch) => save([...data, batch]);
 
@@ -393,7 +404,6 @@ export default function App() {
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
       <div style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px" }}>
-        {/* Header */}
         <div style={{ marginBottom: 28 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
             <div>
@@ -407,7 +417,6 @@ export default function App() {
             }}>+</button>
           </div>
 
-          {/* Stats */}
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
             <div style={{ flex: 1, background: "#052e16", borderRadius: 10, padding: "10px 14px" }}>
               <div style={{ fontSize: 22, fontWeight: 700, color: "#4ade80" }}>{freshCount}</div>
@@ -424,7 +433,6 @@ export default function App() {
           </div>
         </div>
 
-        {/* Search */}
         <input
           placeholder="Search chemistry, brand, notes..."
           value={searchQ}
@@ -436,7 +444,6 @@ export default function App() {
           }}
         />
 
-        {/* Filters */}
         <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 8 }}>
           {kits.map(k => (
             <button key={k} onClick={() => setFilterKit(k)} style={pillStyle(filterKit === k)}>{k}</button>
@@ -460,12 +467,10 @@ export default function App() {
           </div>
         </div>
 
-        {/* Results count */}
         <div style={{ fontSize: 12, color: "#52525b", marginBottom: 10, fontWeight: 600 }}>
           {filtered.length} batch{filtered.length !== 1 ? "es" : ""}
         </div>
 
-        {/* Cards */}
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {filtered.map(item => {
             const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
@@ -506,7 +511,7 @@ export default function App() {
         <AddBatchModal
           onClose={() => setShowAdd(false)}
           onAdd={handleAdd}
-          nextId={Math.max(...data.map(d => d.id)) + 1}
+          nextId={Math.max(...data.map(d => d.id), 0) + 1}
         />
       )}
     </div>
@@ -514,6 +519,7 @@ export default function App() {
 }
 
 ReactDOM.render(<App />, document.getElementById('root'));
+
 </script>
 
 </body>
