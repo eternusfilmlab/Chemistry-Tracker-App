@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0e0c0a">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<title>Chemistry Tracker — Eternus</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0e0c0a; --surface: #18150f; --surface2: #211d16; --surface3: #2a2519;
+  --border: #2e2820; --border2: #3d3529;
+  --text: #e8e0d0; --text2: #b5aa96; --text3: #8a7e6c; --text4: #5c5347;
+  --amber: #d4944a; --amber-dim: #7a5528; --amber-bg: #1f1508;
+  --teal: #5aac98; --teal-dim: #2d5e50; --teal-bg: #0c1f1a;
+  --mauve: #b08aad; --mauve-dim: #5c4860; --mauve-bg: #1a1220;
+  --silver: #a09a92; --silver-dim: #4a463f; --silver-bg: #151413;
+  --rust: #c67054; --rust-dim: #6b3828; --rust-bg: #1d0f0a;
+  --cream: #f2eade;
+  --font-display: 'Cormorant Garamond', 'Georgia', serif;
+  --font-body: 'Newsreader', 'Georgia', serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+  --grain: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;min-height:100dvh;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+body::before{content:'';position:fixed;inset:0;background:var(--grain);pointer-events:none;z-index:9999;opacity:0.5}
+input,select,textarea,button{font-family:inherit}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+20px);padding-bottom:calc(var(--safe-bot)+90px)}
+.page{display:none}.page.active{display:block}
+
+/* Bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,12,10,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;justify-content:center;padding-bottom:var(--safe-bot);z-index:50}
+.nav-btn{flex:1;max-width:160px;padding:12px 0 10px;background:none;border:none;color:var(--text4);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;font-family:var(--font-mono);transition:color 0.2s}
+.nav-btn.active{color:var(--amber)}
+.nav-icon{font-size:18px;line-height:1}
+
+/* Header */
+.header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.header-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2px}
+.brand{font-family:var(--font-mono);font-size:10px;color:var(--text4);font-weight:500;letter-spacing:0.22em;text-transform:uppercase}
+.title{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--cream);letter-spacing:-0.02em;line-height:1.1;margin-top:4px}
+.header-actions{display:flex;gap:6px;align-items:flex-end;padding-bottom:4px}
+.icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.2s}
+.icon-btn:hover{border-color:var(--text3);color:var(--text)}
+.icon-btn.primary{background:var(--amber);color:var(--bg);border:none;font-weight:700;font-size:20px}
+
+/* Big stats */
+.big-stats{display:flex;gap:0;margin-bottom:24px;border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.big-stat{flex:1;padding:14px 12px;text-align:center;border-right:1px solid var(--border)}
+.big-stat:last-child{border-right:none}
+.big-stat-val{font-family:var(--font-display);font-size:28px;font-weight:700;color:var(--cream)}
+.big-stat-val.active-color{color:var(--amber)}
+.big-stat-label{font-family:var(--font-mono);font-size:9px;color:var(--text4);text-transform:uppercase;letter-spacing:0.14em;margin-top:2px}
+
+/* Search */
+.search-wrap{position:relative;margin-bottom:14px}
+.search{width:100%;padding:11px 14px;border-radius:2px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;outline:none;font-family:var(--font-mono);font-size:13px;transition:border-color 0.2s}
+.search:focus{border-color:var(--amber)}
+.search::placeholder{color:var(--text4)}
+
+/* Filters */
+.filters{display:flex;gap:0;overflow-x:auto;scrollbar-width:none;margin-bottom:8px;border:1px solid var(--border);border-radius:2px;overflow:hidden}
+.filters::-webkit-scrollbar{display:none}
+.pill{padding:8px 14px;border:none;border-right:1px solid var(--border);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;background:transparent;color:var(--text3);font-family:var(--font-mono);letter-spacing:0.04em;transition:all 0.15s}
+.pill:last-child{border-right:none}
+.pill.active{background:var(--surface2);color:var(--cream)}
+.pill:hover:not(.active){background:var(--surface)}
+.filter-row{display:flex;gap:8px;margin-bottom:16px;align-items:center}
+.filter-row .filters{flex:1}
+.sort-select{background:var(--surface);color:var(--text3);border:1px solid var(--border);border-radius:2px;padding:8px 10px;font-size:11px;cursor:pointer;font-family:var(--font-mono)}
+.count{font-family:var(--font-mono);font-size:11px;color:var(--text4);margin-bottom:12px;letter-spacing:0.04em}
+
+/* Cards */
+.cards{display:flex;flex-direction:column;gap:2px}
+.card{background:var(--surface);padding:16px 18px;cursor:pointer;border-left:2px solid transparent;transition:all 0.15s;position:relative}
+.card:hover{background:var(--surface2)}
+.card::after{content:'';position:absolute;bottom:0;left:18px;right:18px;height:1px;background:var(--border)}
+.card:last-child::after{display:none}
+.card.kit-c41{border-left-color:var(--amber)}
+.card.kit-ecn2{border-left-color:var(--teal)}
+.card.kit-e6{border-left-color:var(--mauve)}
+.card.kit-bw{border-left-color:var(--silver)}
+
+.card-row1{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:2px}
+.chem-name{font-family:var(--font-display);font-weight:600;font-size:19px;color:var(--cream);letter-spacing:-0.01em}
+.card-date{font-family:var(--font-mono);font-size:11px;color:var(--text4)}
+.card-row2{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;padding:2px 0}
+.tag.c41{color:var(--amber)}.tag.ecn2{color:var(--teal)}.tag.e6{color:var(--mauve)}.tag.bw{color:var(--silver)}
+.tag.fresh{color:var(--amber)}.tag.discarded{color:var(--text4)}
+.tag-sep{color:var(--border2);font-size:10px}
+.card-brand{font-size:13px;color:var(--text3);font-style:italic}
+
+/* Progress — liquid level style */
+.level-wrap{display:flex;align-items:center;gap:10px}
+.level-track{flex:1;height:3px;background:var(--border);overflow:hidden}
+.level-fill{height:100%;transition:width 0.5s ease}
+.level-fill.c41{background:var(--amber)}.level-fill.ecn2{background:var(--teal)}.level-fill.e6{background:var(--mauve)}.level-fill.bw{background:var(--silver)}.level-fill.over{background:var(--rust)}
+.level-text{font-family:var(--font-mono);font-size:11px;color:var(--text3);min-width:44px;text-align:right;font-variant-numeric:tabular-nums}
+.no-limit{font-size:11px;color:var(--text4);font-style:italic}
+
+/* Expanded detail */
+.card-detail{margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+.detail-label{font-family:var(--font-mono);color:var(--text4);font-weight:500;font-size:10px;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:6px}
+.roll-log{font-family:var(--font-mono);font-size:12px;color:var(--text2);line-height:1.8}
+.roll-entry{display:inline;margin-right:4px}
+.roll-entry::after{content:' · ';color:var(--text4)}
+.roll-entry:last-child::after{display:none}
+.detail-note{color:var(--rust);font-size:13px;line-height:1.6;font-style:italic;margin-top:8px}
+.card-actions{display:flex;gap:8px;margin-top:12px}
+.action-btn{padding:7px 16px;border:1px solid var(--border);background:transparent;cursor:pointer;font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;transition:all 0.15s;border-radius:2px}
+.action-btn.discard{color:var(--rust);border-color:var(--rust-dim)}.action-btn.activate{color:var(--amber);border-color:var(--amber-dim)}.action-btn.add-rolls{color:var(--teal);border-color:var(--teal-dim)}
+.action-btn:hover{background:var(--surface2)}
+
+.empty{text-align:center;padding:60px 20px;color:var(--text4);font-style:italic;font-size:15px}
+
+/* Modals */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,8,6,0.85);display:flex;align-items:flex-end;justify-content:center;z-index:100;animation:fadeIn 0.2s}
+@media(min-width:540px){.modal-overlay{align-items:center}}
+@keyframes fadeIn{from{opacity:0}}@keyframes slideUp{from{transform:translateY(24px);opacity:0}}
+.modal{background:var(--bg);border:1px solid var(--border);padding:28px 24px calc(var(--safe-bot)+28px);width:100%;max-width:460px;max-height:90vh;max-height:90dvh;overflow-y:auto;animation:slideUp 0.25s ease}
+@media(min-width:540px){.modal{margin:20px}}
+.modal h2{font-family:var(--font-display);font-size:24px;font-weight:600;margin-bottom:20px;color:var(--cream)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-family:var(--font-mono);font-size:10px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px}
+.form-input{width:100%;padding:10px 12px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:14px;outline:none;font-family:var(--font-mono);font-size:13px;border-radius:2px;transition:border-color 0.15s}
+.form-input:focus{border-color:var(--amber)}
+textarea.form-input{min-height:56px;resize:vertical;font-family:var(--font-mono)}
+.modal-actions{display:flex;gap:8px;margin-top:20px}
+.modal-btn{flex:1;padding:12px;border:none;cursor:pointer;font-family:var(--font-mono);font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;border-radius:2px;transition:opacity 0.15s}
+.modal-btn:hover{opacity:0.85}
+.modal-btn.cancel{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.modal-btn.submit{background:var(--amber);color:var(--bg)}
+.conn-status{display:flex;align-items:center;gap:8px;padding:10px 14px;margin-bottom:14px;font-size:13px;font-weight:500;border:1px solid var(--border)}
+.conn-status.online{border-color:var(--amber-dim);color:var(--amber)}.conn-status.offline{border-color:var(--rust-dim);color:var(--rust)}
+.conn-dot{width:6px;height:6px;border-radius:50%}.conn-status.online .conn-dot{background:var(--amber)}.conn-status.offline .conn-dot{background:var(--rust)}
+.settings-note{font-size:13px;color:var(--text3);line-height:1.6;margin-bottom:16px}
+
+/* Sync bar */
+.sync-bar{position:fixed;top:0;left:0;right:0;height:2px;z-index:200;pointer-events:none}
+.sync-bar.active{background:var(--amber);animation:syncPulse 1s ease infinite}
+@keyframes syncPulse{0%,100%{opacity:1}50%{opacity:0.3}}
+
+/* Toast */
+.toast{position:fixed;bottom:calc(var(--safe-bot)+70px);left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--cream);padding:10px 20px;font-size:13px;font-weight:500;z-index:300;border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;animation:toastIn 0.3s ease}
+@keyframes toastIn{from{transform:translateX(-50%) translateY(16px);opacity:0}}
+
+/* ====== STATS PAGE ====== */
+.stats-header{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--cream);margin-bottom:6px;letter-spacing:-0.02em}
+.stats-sub{font-family:var(--font-mono);font-size:11px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:28px}
+.stats-section{margin-bottom:32px}
+.section-title{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--text2);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* Big number grid */
+.num-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:2px;margin-bottom:28px;border:1px solid var(--border)}
+.num-cell{padding:16px 12px;text-align:center;background:var(--surface)}
+.num-cell-val{font-family:var(--font-display);font-size:30px;font-weight:700;color:var(--cream)}
+.num-cell-val.amber{color:var(--amber)}
+.num-cell-label{font-family:var(--font-mono);font-size:9px;color:var(--text4);text-transform:uppercase;letter-spacing:0.12em;margin-top:3px}
+
+/* Bar chart */
+.bar-row{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.bar-label{font-family:var(--font-mono);font-size:12px;font-weight:600;color:var(--text2);width:52px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:20px;background:var(--surface);overflow:hidden}
+.bar-fill{height:100%;display:flex;align-items:center;padding-left:8px;transition:width 0.6s ease;min-width:2px}
+.bar-fill span{font-family:var(--font-mono);font-size:10px;font-weight:600;color:rgba(0,0,0,0.6);white-space:nowrap}
+.bar-val{font-family:var(--font-mono);font-size:11px;font-weight:600;color:var(--text3);width:48px;text-align:right;flex-shrink:0}
+
+/* Timeline */
+.timeline{display:flex;align-items:flex-end;gap:2px;height:120px;padding-top:8px}
+.tl-col{flex:1;display:flex;flex-direction:column;align-items:center;height:100%;justify-content:flex-end}
+.tl-val{font-family:var(--font-mono);font-size:8px;color:var(--text3);margin-bottom:3px;font-weight:500}
+.tl-bar{width:100%;min-width:6px;max-width:32px;transition:height 0.5s ease}
+.tl-label{font-family:var(--font-mono);font-size:8px;color:var(--text4);margin-top:4px;text-align:center;line-height:1.3}
+
+/* Chem table */
+.chem-table{width:100%;border-collapse:collapse}
+.chem-table th{font-family:var(--font-mono);font-size:10px;font-weight:600;color:var(--text4);text-transform:uppercase;letter-spacing:0.08em;text-align:left;padding:8px 10px;border-bottom:1px solid var(--border)}
+.chem-table td{font-size:13px;padding:9px 10px;border-bottom:1px solid var(--border);color:var(--text2)}
+.chem-table tr:last-child td{border-bottom:none}
+.chem-table .num{text-align:right;font-family:var(--font-mono);font-weight:600;color:var(--cream);font-size:12px}
+.chem-table .kit-tag{font-family:var(--font-mono);font-size:10px;font-weight:600;letter-spacing:0.04em}
+
+/* Brand list */
+.brand-list{display:flex;flex-direction:column;gap:0}
+.brand-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.brand-row:last-child{border-bottom:none}
+.brand-name{font-size:14px;color:var(--text2)}
+.brand-count{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--cream)}
+
+/* Lifespan */
+.ls-list{display:flex;flex-direction:column;gap:2px}
+.ls-row{background:var(--surface);padding:12px 16px;display:flex;justify-content:space-between;align-items:center}
+.ls-info{display:flex;align-items:center;gap:10px}
+.ls-kit{font-family:var(--font-mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.04em}
+.ls-kit.c41{color:var(--amber)}.ls-kit.ecn2{color:var(--teal)}.ls-kit.e6{color:var(--mauve)}.ls-kit.bw{color:var(--silver)}
+.ls-chem{font-family:var(--font-body);font-size:14px;color:var(--text2)}
+.ls-dates{font-family:var(--font-mono);font-size:10px;color:var(--text4);margin-top:2px}
+.ls-days{font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--cream)}
+.ls-days.short{color:var(--rust)}
+.ls-days-lbl{font-family:var(--font-mono);font-size:9px;color:var(--text4);text-transform:uppercase;letter-spacing:0.08em}
+</style>
+</head>
+<body>
+<div class="sync-bar" id="syncBar"></div>
+<div class="app">
+  <!-- TRACKER -->
+  <div class="page active" id="pageTracker">
+    <div class="header">
+      <div class="header-row">
+        <div>
+          <div class="brand">Eternus Film Lab</div>
+          <div class="title">Chemistry Tracker</div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="openSettings()">⚙</button>
+          <button class="icon-btn" onclick="syncFromSheet()">↻</button>
+          <button class="icon-btn primary" onclick="openAddModal()">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="big-stats">
+      <div class="big-stat"><div class="big-stat-val active-color" id="statActive">—</div><div class="big-stat-label">Active</div></div>
+      <div class="big-stat"><div class="big-stat-val" id="statDiscarded">—</div><div class="big-stat-label">Discarded</div></div>
+      <div class="big-stat"><div class="big-stat-val" id="statTotal">—</div><div class="big-stat-label">Total</div></div>
+    </div>
+    <div class="search-wrap"><input class="search" id="searchInput" placeholder="Search…" oninput="renderCards()"></div>
+    <div class="filters" id="kitFilters"></div>
+    <div class="filter-row"><div class="filters" id="statusFilters"></div><select class="sort-select" id="sortSelect" onchange="renderCards()"><option value="date_desc">Newest</option><option value="date_asc">Oldest</option><option value="kit">Kit</option></select></div>
+    <div class="count" id="resultCount"></div>
+    <div class="cards" id="cardList"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="page" id="pageStats">
+    <div class="stats-header">Analytics</div>
+    <div class="stats-sub">All-time chemistry data</div>
+    <div class="num-grid" id="numGrid"></div>
+    <div class="stats-section"><div class="section-title">Rolls per process</div><div id="rollsPerKit"></div></div>
+    <div class="stats-section"><div class="section-title">Monthly activity</div><div class="timeline" id="monthlyChart"></div></div>
+    <div class="stats-section"><div class="section-title">Chemistry breakdown</div><div style="overflow-x:auto"><table class="chem-table" id="chemTable"></table></div></div>
+    <div class="stats-section"><div class="section-title">Suppliers & brands</div><div class="brand-list" id="brandList"></div></div>
+    <div class="stats-section"><div class="section-title">Longest-lasting batches</div><div class="ls-list" id="lifespanList"></div></div>
+    <div class="stats-section"><div class="section-title">Quickest exhausted</div><div class="ls-list" id="shortLifeList"></div></div>
+  </div>
+</div>
+
+<div class="bottom-nav">
+  <button class="nav-btn active" id="navTracker" onclick="switchPage('Tracker')"><span class="nav-icon">◉</span>Tracker</button>
+  <button class="nav-btn" id="navStats" onclick="switchPage('Stats')"><span class="nav-icon">◫</span>Stats</button>
+</div>
+<div id="toastContainer"></div>
+
+<script>
+let batches=[],expandedId=null,filterKit='All',filterStatus='Active',currentPage='Tracker';
+const STORAGE_KEY='eternus_chem_data',API_KEY='eternus_api_url';
+
+function switchPage(p){currentPage=p;document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active'));document.getElementById('page'+p).classList.add('active');document.getElementById('nav'+p).classList.add('active');if(p==='Stats')renderStatsPage();window.scrollTo(0,0)}
+
+function getApiUrl(){return localStorage.getItem(API_KEY)||''}
+function setApiUrl(u){localStorage.setItem(API_KEY,u)}
+function parseRollCount(s){if(!s||!s.trim())return 0;let t=0;s.split(',').forEach(p=>{const m=p.trim().match(/^(\d+)/);if(m)t+=parseInt(m[1])});return t}
+function parseMaxRolls(s){if(!s||s==='-'||s==='')return null;const m=s.match(/(\d+)/);return m?parseInt(m[1]):null}
+function parseDateSort(d){if(!d||d==='-')return 0;const p=d.split('/');if(p.length===3)return new Date(p[2],p[1]-1,p[0]).getTime();return 0}
+function parseDate(d){if(!d||d==='-')return null;const p=d.split('/');if(p.length===3)return new Date(p[2],p[1]-1,p[0]);return null}
+function kitClass(kit){const k=kit.toLowerCase().replace(/[^a-z0-9]/g,'');if(k.includes('c41'))return'c41';if(k.includes('ecn'))return'ecn2';if(k.includes('e6'))return'e6';return'bw'}
+function kitCSSColor(kc){return{c41:'var(--amber)',ecn2:'var(--teal)',e6:'var(--mauve)',bw:'var(--silver)'}[kc]||'var(--silver)'}
+function showToast(m){const c=document.getElementById('toastContainer'),t=document.createElement('div');t.className='toast';t.textContent=m;c.appendChild(t);setTimeout(()=>t.remove(),2500)}
+function setSyncing(on){document.getElementById('syncBar').className=on?'sync-bar active':'sync-bar'}
+function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify(batches))}
+function loadLocal(){const d=localStorage.getItem(STORAGE_KEY);if(d){batches=JSON.parse(d);return true}return false}
+
+async function syncFromSheet(){const url=getApiUrl();if(!url){showToast('Set Script URL in ⚙');return}setSyncing(true);try{const r=await fetch(url+'?action=read');const d=await r.json();if(d.success){batches=d.data.map((b,i)=>({...b,id:b.row||(i+1)}));saveLocal();renderAll();showToast('Synced '+batches.length+' batches')}else showToast('Error: '+(d.error||'Unknown'))}catch(e){showToast('Offline — using cache');console.error(e)}setSyncing(false)}
+async function pushToSheet(action,payload){const url=getApiUrl();if(!url)return false;setSyncing(true);try{const o=action==='read'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)};const r=await fetch(url+'?action='+action,o);const d=await r.json();setSyncing(false);return d.success}catch(e){setSyncing(false);return false}}
+
+async function addBatch(b){b.id=Date.now();batches.push(b);saveLocal();renderAll();const s=await pushToSheet('add',b);if(s){showToast('Added & synced');syncFromSheet()}else if(getApiUrl())showToast('Added locally');else showToast('Added')}
+async function updateBatchStatus(id,st){const b=batches.find(x=>x.id===id);if(!b)return;b.status=st;saveLocal();renderAll();if(b.row){const s=await pushToSheet('update',b);if(s)showToast('Updated')}}
+async function addRollsToBatch(id,nr){const b=batches.find(x=>x.id===id);if(!b)return;b.rolls=b.rolls?b.rolls+', '+nr:nr;saveLocal();renderAll();if(b.row){const s=await pushToSheet('update',b);if(s)showToast('Rolls updated')}}
+
+function renderAll(){renderTrackerStats();renderFilters();renderCards();if(currentPage==='Stats')renderStatsPage()}
+function renderTrackerStats(){document.getElementById('statActive').textContent=batches.filter(b=>b.status==='Fresh').length;document.getElementById('statDiscarded').textContent=batches.filter(b=>b.status==='Discarded').length;document.getElementById('statTotal').textContent=batches.length}
+
+function renderFilters(){
+  const kits=['All','C41','ECN-2','E6','B&W'];
+  document.getElementById('kitFilters').innerHTML=kits.map(k=>`<button class="pill ${filterKit===k?'active':''}" onclick="filterKit='${k}';renderFilters();renderCards()">${k}</button>`).join('');
+  document.getElementById('statusFilters').innerHTML=['Active','Discarded','All'].map(s=>`<button class="pill ${filterStatus===s?'active':''}" onclick="filterStatus='${s}';renderFilters();renderCards()">${s}</button>`).join('');
+}
+
+function renderCards(){
+  const q=document.getElementById('searchInput').value.toLowerCase(),sort=document.getElementById('sortSelect').value;
+  let list=batches.filter(b=>{if(filterKit!=='All'&&b.kit!==filterKit)return false;if(filterStatus==='Active'&&b.status!=='Fresh')return false;if(filterStatus==='Discarded'&&b.status!=='Discarded')return false;if(q)return(b.chem+b.notes+b.kit+b.rolls+b.extra).toLowerCase().includes(q);return true});
+  list.sort((a,b)=>{if(sort==='date_desc')return parseDateSort(b.mixDate)-parseDateSort(a.mixDate);if(sort==='date_asc')return parseDateSort(a.mixDate)-parseDateSort(b.mixDate);return a.kit.localeCompare(b.kit)});
+  document.getElementById('resultCount').textContent=list.length+' batch'+(list.length!==1?'es':'');
+  if(!list.length){document.getElementById('cardList').innerHTML='<div class="empty">Nothing here.</div>';return}
+  document.getElementById('cardList').innerHTML=list.map(b=>{
+    const kc=kitClass(b.kit),used=parseRollCount(b.rolls),max=parseMaxRolls(b.maxRolls),pct=max?Math.min((used/max)*100,100):0,isOver=max&&used>max,isExp=expandedId===b.id,isFresh=b.status==='Fresh';
+    let prog='';if(max)prog=`<div class="level-wrap"><div class="level-track"><div class="level-fill ${isOver?'over':kc}" style="width:${pct}%"></div></div><span class="level-text" ${isOver?'style="color:var(--rust)"':''}>${used}/${max}</span></div>`;else prog=used>0?`<span class="level-text">${used} rolls</span>`:'<span class="no-limit">no limit</span>';
+    let det='';if(isExp){const entries=(b.rolls||'').split(',').filter(r=>r.trim());
+      det=`<div class="card-detail"><div class="detail-label">Roll log</div><div class="roll-log">${entries.length?entries.map(r=>`<span class="roll-entry">${r.trim()}</span>`).join(''):'<em style="color:var(--text4)">none yet</em>'}</div>${b.extra?`<div class="detail-note">${b.extra}</div>`:''}<div class="card-actions"><button class="action-btn ${isFresh?'discard':'activate'}" onclick="event.stopPropagation();updateBatchStatus(${b.id},'${isFresh?'Discarded':'Fresh'}')">${isFresh?'Discard':'Reactivate'}</button><button class="action-btn add-rolls" onclick="event.stopPropagation();openAddRollsModal(${b.id})">+ Rolls</button></div></div>`}
+    return `<div class="card kit-${kc}" onclick="expandedId=expandedId===${b.id}?null:${b.id};renderCards()"><div class="card-row1"><span class="chem-name">${b.chem}</span><span class="card-date">${b.mixDate}</span></div><div class="card-row2"><span class="tag ${kc}">${b.kit}</span><span class="tag-sep">·</span><span class="tag ${isFresh?'fresh':'discarded'}">${isFresh?'Active':'Used'}</span><span class="tag-sep">·</span><span class="card-brand">${b.notes}</span></div>${prog}${det}</div>`
+  }).join('')}
+
+function renderStatsPage(){
+  if(!batches.length)return;
+  const totalRolls=batches.reduce((s,b)=>s+parseRollCount(b.rolls),0),freshCount=batches.filter(b=>b.status==='Fresh').length,uniqueChems=[...new Set(batches.map(b=>b.chem))].length;
+  const dates=batches.map(b=>parseDateSort(b.mixDate)).filter(d=>d>0);const firstDate=dates.length?new Date(Math.min(...dates)):null;const daysSince=firstDate?Math.floor((Date.now()-firstDate.getTime())/(864e5)):0;
+  const avgMonth=daysSince>0?(totalRolls/Math.max(daysSince/30,1)).toFixed(1):'—';
+  document.getElementById('numGrid').innerHTML=`<div class="num-cell"><div class="num-cell-val amber">${totalRolls}</div><div class="num-cell-label">Rolls</div></div><div class="num-cell"><div class="num-cell-val">${batches.length}</div><div class="num-cell-label">Batches</div></div><div class="num-cell"><div class="num-cell-val">${freshCount}</div><div class="num-cell-label">Active</div></div><div class="num-cell"><div class="num-cell-val">${daysSince}</div><div class="num-cell-label">Days</div></div><div class="num-cell"><div class="num-cell-val">${uniqueChems}</div><div class="num-cell-label">Types</div></div><div class="num-cell"><div class="num-cell-val">${avgMonth}</div><div class="num-cell-label">Rolls/Mo</div></div>`;
+
+  // Rolls per kit
+  const kitRolls={};batches.forEach(b=>{kitRolls[b.kit]=(kitRolls[b.kit]||0)+parseRollCount(b.rolls)});const maxK=Math.max(...Object.values(kitRolls),1);
+  document.getElementById('rollsPerKit').innerHTML=['C41','ECN-2','E6','B&W'].filter(k=>kitRolls[k]).map(k=>{const v=kitRolls[k]||0,pct=Math.max((v/maxK)*100,3),kc=kitClass(k);return`<div class="bar-row"><div class="bar-label">${k}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${kitCSSColor(kc)}"><span>${v}</span></div></div><div class="bar-val">${v}</div></div>`}).join('');
+
+  // Monthly
+  const monthly={};batches.forEach(b=>{const d=parseDate(b.mixDate);if(!d)return;const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');monthly[key]=(monthly[key]||0)+parseRollCount(b.rolls)});
+  const mKeys=Object.keys(monthly).sort(),maxM=Math.max(...Object.values(monthly),1),mNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('monthlyChart').innerHTML=mKeys.map(k=>{const v=monthly[k],pct=Math.max((v/maxM)*100,5);const[y,m]=k.split('-');return`<div class="tl-col"><div class="tl-val">${v}</div><div class="tl-bar" style="height:${pct}%;background:var(--amber)"></div><div class="tl-label">${mNames[parseInt(m)-1]}<br>'${y.slice(2)}</div></div>`}).join('');
+
+  // Chem table
+  const chemData={};batches.forEach(b=>{const key=b.kit+'|'+b.chem;if(!chemData[key])chemData[key]={kit:b.kit,chem:b.chem,count:0,rolls:0};chemData[key].count++;chemData[key].rolls+=parseRollCount(b.rolls)});
+  const chemRows=Object.values(chemData).sort((a,b)=>b.rolls-a.rolls);
+  document.getElementById('chemTable').innerHTML=`<thead><tr><th>Kit</th><th>Chemistry</th><th style="text-align:right">Batches</th><th style="text-align:right">Rolls</th></tr></thead><tbody>${chemRows.map(r=>`<tr><td><span class="kit-tag tag ${kitClass(r.kit)}">${r.kit}</span></td><td>${r.chem}</td><td class="num">${r.count}</td><td class="num">${r.rolls}</td></tr>`).join('')}</tbody>`;
+
+  // Brands
+  const brands={};batches.forEach(b=>{const n=b.notes.trim();if(!n)return;const key=n.toLowerCase().split(/\s+/).slice(0,2).join(' ');if(!brands[key])brands[key]={name:n.split(/\s+/).slice(0,3).join(' '),count:0};brands[key].count++});
+  document.getElementById('brandList').innerHTML=Object.values(brands).sort((a,b)=>b.count-a.count).slice(0,12).map(br=>`<div class="brand-row"><span class="brand-name">${br.name}</span><span class="brand-count">${br.count}×</span></div>`).join('');
+
+  // Lifespans
+  const lifespans=[];
+  batches.forEach(b=>{if(b.status!=='Discarded')return;const mixD=parseDate(b.mixDate);if(!mixD)return;const parts=(b.rolls||'').split(',').filter(r=>r.trim());if(parts.length<2)return;let lastDate=mixD;parts.forEach(r=>{const dm=r.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);if(dm){let yr=parseInt(dm[3]);if(yr<100)yr+=2000;const d=new Date(yr,parseInt(dm[2])-1,parseInt(dm[1]));if(d>lastDate)lastDate=d}});const days=Math.floor((lastDate-mixD)/864e5);if(days>0)lifespans.push({...b,days,endDate:lastDate})});
+  lifespans.sort((a,b)=>b.days-a.days);
+
+  const renderLS=(arr,isShort)=>arr.map(l=>{const kc=kitClass(l.kit);return`<div class="ls-row"><div><div class="ls-info"><span class="ls-kit ${kc}">${l.kit}</span><span class="ls-chem">${l.chem}</span></div><div class="ls-dates">${l.mixDate} → ${l.endDate.toLocaleDateString('en-GB')}</div></div><div style="text-align:right"><div class="ls-days ${isShort?'short':''}">${l.days}</div><div class="ls-days-lbl">days</div></div></div>`}).join('')||'<div class="empty" style="padding:16px">Not enough data</div>';
+
+  document.getElementById('lifespanList').innerHTML=renderLS(lifespans.slice(0,7),false);
+  document.getElementById('shortLifeList').innerHTML=renderLS(lifespans.slice().sort((a,b)=>a.days-b.days).slice(0,5),true);
+}
+
+// Modals
+function openAddModal(){const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove()};ov.innerHTML=`<div class="modal"><h2>New batch</h2><div class="form-grid"><div class="form-group"><label class="form-label">Kit</label><select class="form-input" id="addKit"><option>C41</option><option>ECN-2</option><option>E6</option><option>B&W</option></select></div><div class="form-group"><label class="form-label">Chemistry</label><select class="form-input" id="addChem"><option>Pre-Bath</option><option selected>Developer</option><option>First Dev</option><option>Color Dev</option><option>Stop</option><option>Bleach</option><option>Fixer</option><option>Stabiliser</option></select></div><div class="form-group"><label class="form-label">Mix date</label><input class="form-input" id="addDate" placeholder="DD/MM/YYYY" value="${new Date().toLocaleDateString('en-GB')}"></div><div class="form-group"><label class="form-label">Max rolls</label><input class="form-input" id="addMax" placeholder="e.g. 10"></div><div class="form-group full"><label class="form-label">Brand / notes</label><input class="form-input" id="addNotes" placeholder="Photon, Kodak, DIY…"></div><div class="form-group full"><label class="form-label">Roll log</label><textarea class="form-input" id="addRolls" placeholder="5 on 25.03.26, 3 on 27.03.26"></textarea></div><div class="form-group full"><label class="form-label">Additional notes</label><input class="form-input" id="addExtra" placeholder="Optional"></div></div><div class="modal-actions"><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn submit" onclick="submitAdd(this)">Add</button></div></div>`;document.body.appendChild(ov)}
+function submitAdd(btn){const b={kit:document.getElementById('addKit').value,chem:document.getElementById('addChem').value,mixDate:document.getElementById('addDate').value,maxRolls:document.getElementById('addMax').value,notes:document.getElementById('addNotes').value,status:'Fresh',rolls:document.getElementById('addRolls').value,extra:document.getElementById('addExtra').value};if(!b.mixDate){showToast('Mix date required');return}btn.closest('.modal-overlay').remove();addBatch(b)}
+function openAddRollsModal(id){const b=batches.find(x=>x.id===id);if(!b)return;const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove()};ov.innerHTML=`<div class="modal"><h2>Add rolls — ${b.kit} ${b.chem}</h2><div class="form-group"><label class="form-label">New entry</label><input class="form-input" id="newRollsInput" placeholder="e.g. 4 on ${new Date().toLocaleDateString('en-GB').replace(/\//g,'.')}"></div><div class="modal-actions"><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn submit" onclick="const v=document.getElementById('newRollsInput').value.trim();if(v){addRollsToBatch(${id},v);this.closest('.modal-overlay').remove()}">Add</button></div></div>`;document.body.appendChild(ov);setTimeout(()=>document.getElementById('newRollsInput').focus(),100)}
+function openSettings(){const u=getApiUrl(),c=!!u;const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove()};ov.innerHTML=`<div class="modal"><h2>Settings</h2><div class="conn-status ${c?'online':'offline'}"><div class="conn-dot"></div>${c?'Connected to Google Sheet':'Not connected'}</div><div class="settings-note">Paste your Google Apps Script Web App URL to sync with your sheet.</div><div class="form-group" style="margin-bottom:14px"><label class="form-label">Script URL</label><input class="form-input" id="settingsUrl" value="${u}" placeholder="https://script.google.com/macros/s/…"></div><div class="modal-actions" style="flex-direction:column;gap:8px"><button class="modal-btn submit" onclick="setApiUrl(document.getElementById('settingsUrl').value.trim());this.closest('.modal-overlay').remove();showToast('Saved');if(getApiUrl())syncFromSheet()">Save & Sync</button><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn cancel" style="color:var(--rust);margin-top:8px" onclick="if(confirm('Reset local data?')){localStorage.removeItem('${STORAGE_KEY}');batches=[];renderAll();this.closest('.modal-overlay').remove();syncFromSheet()}">Reset data</button></div></div>`;document.body.appendChild(ov)}
+
+function init(){if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW:',e));const h=loadLocal();renderAll();if(getApiUrl())syncFromSheet();else if(!h)showToast('Tap ⚙ to connect')}
+init();
+</script>
+</body>
+</html>
