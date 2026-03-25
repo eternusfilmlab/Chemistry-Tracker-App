@@ -424,6 +424,76 @@ function EditBatchModal({ item, onClose, onSave }) {
   );
 }
 
+function AllBatchesTable({ data, onEdit, onDelete }) {
+  const thStyle = {
+    padding: "8px 10px", textAlign: "left", fontSize: 10, fontWeight: 700,
+    color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em",
+    borderBottom: "1px solid #27272a", whiteSpace: "nowrap",
+  };
+  const tdStyle = {
+    padding: "8px 10px", fontSize: 12, color: "#d4d4d8",
+    borderBottom: "1px solid #18181b", verticalAlign: "top",
+    maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+  };
+
+  return (
+    <div style={{ overflowX: "auto", borderRadius: 10, border: "1px solid #27272a" }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+        <thead>
+          <tr style={{ background: "#111113" }}>
+            <th style={thStyle}>Kit</th>
+            <th style={thStyle}>Chemistry</th>
+            <th style={thStyle}>Mix Date</th>
+            <th style={thStyle}>Max Rolls</th>
+            <th style={thStyle}>Brand</th>
+            <th style={thStyle}>Rolls</th>
+            <th style={thStyle}>Status</th>
+            <th style={{ ...thStyle, textAlign: "center" }}>Delete</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item, idx) => {
+            const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
+            const isFresh = item.status === "Fresh";
+            return (
+              <tr
+                key={item.id}
+                onDoubleClick={() => onEdit(item)}
+                style={{ cursor: "pointer", background: idx % 2 === 0 ? "#18181b" : "#111113" }}
+                onMouseEnter={e => e.currentTarget.style.background = "#1f1f23"}
+                onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 0 ? "#18181b" : "#111113"}
+              >
+                <td style={{ ...tdStyle, color: colors.accent, fontWeight: 700 }}>{item.kit}</td>
+                <td style={{ ...tdStyle, color: "#fafafa", fontWeight: 600 }}>{item.chem}</td>
+                <td style={tdStyle}>{item.mixDate}</td>
+                <td style={tdStyle}>{item.maxRolls || "-"}</td>
+                <td style={{ ...tdStyle, color: "#a1a1aa" }}>{item.notes}</td>
+                <td style={{ ...tdStyle, maxWidth: 200 }}>{item.rolls || "—"}</td>
+                <td style={{ ...tdStyle, color: isFresh ? "#4ade80" : "#71717a" }}>
+                  {isFresh ? "Active" : "Discarded"}
+                </td>
+                <td style={{ ...tdStyle, textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                  <button
+                    onDoubleClick={e => e.stopPropagation()}
+                    onClick={() => onDelete(item.id)}
+                    style={{
+                      background: "transparent", border: "1px solid #7f1d1d", color: "#f87171",
+                      borderRadius: 6, cursor: "pointer", fontSize: 14, width: 26, height: 26,
+                      display: "inline-flex", alignItems: "center", justifyContent: "center",
+                      fontFamily: "'JetBrains Mono', monospace", lineHeight: 1,
+                    }}
+                    title="Delete batch"
+                  >×</button>
+                </td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function App() {
   const [data, setData] = useState(INITIAL_DATA);
   const [filterKit, setFilterKit] = useState("All");
@@ -434,6 +504,7 @@ function App() {
   const [showEdit, setShowEdit] = useState(false);
   const [editItem, setEditItem] = useState(null);
   const [sortBy, setSortBy] = useState("date_desc");
+  const [view, setView] = useState("cards");
 
   useEffect(() => {
     try {
@@ -468,6 +539,21 @@ function App() {
 
   const handleStatusToggle = (id) => {
     save(data.map(d => d.id === id ? { ...d, status: d.status === "Fresh" ? "Discarded" : "Fresh" } : d));
+  };
+
+  const handleOpenEdit = (item) => { setEditItem(item); setShowEdit(true); };
+
+  const exportCSV = () => {
+    const headers = ["ID", "Kit", "Chemistry", "Mix Date", "Max Rolls", "Brand/Notes", "Roll Log", "Additional Notes", "Status"];
+    const rows = data.map(d => [d.id, d.kit, d.chem, d.mixDate, d.maxRolls, d.notes, d.rolls, d.extra, d.status]);
+    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chemistry-tracker.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   let filtered = data.filter(d => {
@@ -515,11 +601,32 @@ function App() {
               <div style={{ fontSize: 11, color: "#52525b", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Eternus Film</div>
               <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em" }}>Chemistry Tracker</h1>
             </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <button onClick={exportCSV} title="Export CSV" style={{
+              height: 44, padding: "0 14px", borderRadius: 12, border: "1px solid #27272a",
+              background: "#18181b", color: "#a1a1aa", fontSize: 12, cursor: "pointer",
+              fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, whiteSpace: "nowrap",
+            }}>CSV ↓</button>
+            <div style={{ display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid #27272a" }}>
+              <button onClick={() => setView("cards")} style={{
+                padding: "0 14px", height: 44, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+                fontFamily: "'JetBrains Mono', monospace",
+                background: view === "cards" ? "#fafafa" : "#18181b",
+                color: view === "cards" ? "#09090b" : "#a1a1aa",
+              }}>Cards</button>
+              <button onClick={() => setView("table")} style={{
+                padding: "0 14px", height: 44, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
+                fontFamily: "'JetBrains Mono', monospace",
+                background: view === "table" ? "#fafafa" : "#18181b",
+                color: view === "table" ? "#09090b" : "#a1a1aa",
+              }}>Table</button>
+            </div>
             <button onClick={() => setShowAdd(true)} style={{
               width: 44, height: 44, borderRadius: 12, border: "none",
               background: "#fafafa", color: "#09090b", fontSize: 24, cursor: "pointer",
               display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700,
             }}>+</button>
+          </div>
           </div>
 
           <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
@@ -572,12 +679,13 @@ function App() {
           </div>
         </div>
 
-        <div style={{ fontSize: 12, color: "#52525b", marginBottom: 10, fontWeight: 600 }}>
-          {filtered.length} batch{filtered.length !== 1 ? "es" : ""}
+        <div style={{ fontSize: 12, color: "#52525b", marginBottom: 10, fontWeight: 600, display: "flex", alignItems: "center", gap: 12 }}>
+          <span>{filtered.length} batch{filtered.length !== 1 ? "es" : ""}</span>
+          {view === "table" && <span style={{ fontWeight: 400, color: "#3f3f46" }}>double-click row to edit</span>}
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {filtered.map(item => {
+          {view === "cards" ? filtered.map(item => {
             const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
             return (
               <div key={item.id}>
@@ -587,12 +695,18 @@ function App() {
                   expanded={expanded === item.id}
                   onToggle={() => setExpanded(expanded === item.id ? null : item.id)}
                   onStatusToggle={() => handleStatusToggle(item.id)}
-                  onEdit={() => { setEditItem(item); setShowEdit(true); }}
+                  onEdit={() => handleOpenEdit(item)}
                   onDelete={() => handleDelete(item.id)}
                 />
               </div>
             );
-          })}
+          }) : (
+            <AllBatchesTable
+              data={filtered}
+              onEdit={handleOpenEdit}
+              onDelete={handleDelete}
+            />
+          )}
         </div>
 
         {filtered.length === 0 && (
