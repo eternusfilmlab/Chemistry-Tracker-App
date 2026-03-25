@@ -7,9 +7,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#09090b">
 <meta name="description" content="Eternus Film Chemistry Tracker">
-<link rel="manifest" href="manifest.json">
-<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="manifest" href="./manifest.json">
+<link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
 <title>Chemistry Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -255,7 +255,7 @@
   <div class="header">
     <div class="header-row">
       <div class="logo-area">
-        <img src="icons/icon-192.png" alt="" class="logo-icon" onerror="this.style.display='none'">
+        <img src="./icons/icon-192.png" alt="" class="logo-icon" onerror="this.style.display='none'">
         <div>
           <div class="brand">Eternus Film</div>
           <div class="title">Chemistry Tracker</div>
@@ -726,7 +726,7 @@ function openSettings() {
 function init() {
   // Register service worker
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(e => console.log('SW:', e));
+    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW:', e));
   }
   
   // Load cached data
