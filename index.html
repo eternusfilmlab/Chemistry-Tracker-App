@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<title>My App</title>
+</head>
+
+<body>
+
+<div id="root"></div>
+
+<script type="text/babel">
+
+// PASTE YOUR CLAUDE JSX HERE
+  import { useState, useEffect, useCallback } from "react";
+
+const INITIAL_DATA = [
+  {id:1,kit:"C41",chem:"Developer",mixDate:"17/04/2025",maxRolls:"10",notes:"PHOTON",status:"Discarded",rolls:"8 on 17.04.25, 2 on 18.04.25",extra:""},
+  {id:2,kit:"C41",chem:"Stop",mixDate:"17/04/2025",maxRolls:"10",notes:"1% GAA",status:"Discarded",rolls:"8 on 17.04.25, 2 on 18.04.25",extra:""},
+  {id:3,kit:"C41",chem:"Bleach",mixDate:"-",maxRolls:"-",notes:"PHOTON",status:"Discarded",rolls:"",extra:"Discarded at 38 rolls"},
+  {id:4,kit:"C41",chem:"Fixer",mixDate:"17/04/2025",maxRolls:"15-18",notes:"TF-2",status:"Discarded",rolls:"8 on 17.04.25, 2 on 18.04.25, 5 (120) on 19.04.25",extra:""},
+  {id:5,kit:"ECN-2",chem:"Pre-Bath",mixDate:"22/04/2025",maxRolls:"30",notes:"PB-2",status:"Discarded",rolls:"6 on 22.04.25, 8 on 29.04.25, 2 on 17.05.25, 6 on 27.05.25, 7 on 06.06.25, 3 on 10.06.25",extra:""},
+  {id:6,kit:"ECN-2",chem:"Developer",mixDate:"22/04/2025",maxRolls:"12",notes:"Kodak",status:"Discarded",rolls:"6 on 22.04.25, 8 on 29.04.25",extra:"processed 2 rolls extra in the developer"},
+  {id:7,kit:"ECN-2",chem:"Stop",mixDate:"22/04/2025",maxRolls:"16",notes:"S.A 1%",status:"Discarded",rolls:"6 on 22.04.25, 8 on 29.04.25",extra:""},
+  {id:8,kit:"ECN-2",chem:"Bleach",mixDate:"22/04/2025",maxRolls:"-",notes:"Photon",status:"Discarded",rolls:"6 on 22.04.25, 8 on 29.04.25, 2 on 17.05.25, 6 on 27.05.25, 7 on 06.06.25, 3 on 10.06.25, 5 on 14.06.25, 3 on 04.07.25",extra:"40 ROLLS DONE BEFORE DISCARDING"},
+  {id:9,kit:"B&W",chem:"Developer",mixDate:"22/04/2025",maxRolls:"16",notes:"Thornton-2 Bath (A&B)",status:"Discarded",rolls:"2 on 22.04.25, 2 on 23.04.25, 9 on 30.04.25",extra:"One of Vikramaditya's roll was expired. Discarded after 13 rolls"},
+  {id:10,kit:"C41",chem:"Developer",mixDate:"19/04/2025",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"5 (120) on 19.04.25",extra:"Replenished"},
+  {id:11,kit:"C41",chem:"Developer",mixDate:"24/04/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"5 on 24.04.25, 2 (120) on 24.04.25",extra:"120 are Fuji Pro NS 160 (expired 2022)"},
+  {id:12,kit:"C41",chem:"Fixer",mixDate:"24/04/2025",maxRolls:"15-18",notes:"TF-2",status:"Discarded",rolls:"7 on 24.04.25, 3 on 06.06.25, 7 on 10.06.25",extra:""},
+  {id:13,kit:"C41",chem:"Bleach",mixDate:"24/04/2025",maxRolls:"-",notes:"Photon",status:"Discarded",rolls:"7 on 24.04.25, 3 on 06.06.25, 7 on 10.06.25, 3 on 16.06.25, 3 on 19.06.25, 2 on 30.06.25",extra:"Almost 40 rolls"},
+  {id:14,kit:"E6",chem:"First Dev",mixDate:"26/04/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"2 on 26.04.25",extra:"changed color, check pH before next use"},
+  {id:15,kit:"E6",chem:"Color Dev",mixDate:"26/04/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"2 on 26.04.25",extra:"changed color, check pH before next use"},
+  {id:16,kit:"E6",chem:"Bleach",mixDate:"26/04/2025",maxRolls:"30",notes:"Photon",status:"Discarded",rolls:"2 on 26.04.25, 1 on 07.05.25, 6 on 28.05.25",extra:""},
+  {id:17,kit:"E6",chem:"Fixer",mixDate:"26/04/2025",maxRolls:"16",notes:"Sodium Thiosulphate",status:"Discarded",rolls:"2 on 26.04.25, 1 on 17.05.25, 3 on 27.05.25",extra:""},
+  {id:18,kit:"E6",chem:"Stabiliser",mixDate:"26/04/2025",maxRolls:"10",notes:"Stab + Formalin10ml",status:"Discarded",rolls:"2 on 26.04.25",extra:""},
+  {id:19,kit:"B&W",chem:"Developer",mixDate:"12/05/2025",maxRolls:"12",notes:"BT2B",status:"Discarded",rolls:"6 on 12.05.25, 3 on 28.05.25, 4 on 06.06.25",extra:""},
+  {id:20,kit:"C41",chem:"Developer",mixDate:"17/05/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"2 on 17.05.25",extra:""},
+  {id:21,kit:"E6",chem:"First Dev",mixDate:"17/05/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"1 on 17.05.25",extra:""},
+  {id:22,kit:"E6",chem:"Color Dev",mixDate:"17/05/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"1 on 17.05.25",extra:""},
+  {id:23,kit:"E6",chem:"Stop",mixDate:"17/05/2025",maxRolls:"-",notes:"Citric Acid",status:"Discarded",rolls:"1 on 17.05.25",extra:""},
+  {id:24,kit:"ECN-2",chem:"Developer",mixDate:"17/05/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"2 on 17.05.25, 6 on 27.05.25",extra:""},
+  {id:25,kit:"ECN-2",chem:"Fixer",mixDate:"17/05/2025",maxRolls:"20",notes:"Adox 1+7",status:"Discarded",rolls:"2 on 17.05.25, 6 on 27.05.25, 7 on 06.06.25",extra:""},
+  {id:26,kit:"B&W",chem:"Fixer",mixDate:"23/05/2025",maxRolls:"20",notes:"adofix",status:"Discarded",rolls:"2 on 19.05.25, 3 on 27.05.25, 3 on 28.05.25",extra:""},
+  {id:27,kit:"C41",chem:"Developer",mixDate:"27/05/2025",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"6 on 27.05.25",extra:""},
+  {id:28,kit:"ECN-2",chem:"Stop",mixDate:"27/05/2025",maxRolls:"10",notes:"S.A. 1%",status:"Discarded",rolls:"6 on 27.06.25, 9 on 06.06.25",extra:""},
+  {id:29,kit:"E6",chem:"First Dev",mixDate:"28/05/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"3 on 27.05.25",extra:""},
+  {id:30,kit:"E6",chem:"Color Dev",mixDate:"28/05/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"3 on 27.05.25",extra:""},
+  {id:31,kit:"E6",chem:"Stop",mixDate:"28/05/2025",maxRolls:"10",notes:"Citric Acid",status:"Discarded",rolls:"3 on 27.05.25, 17.06.25",extra:""},
+  {id:32,kit:"E6",chem:"Fixer",mixDate:"29/05/2025",maxRolls:"20",notes:"Adofix",status:"Discarded",rolls:"3, 3 on 17.06.25, 3 on 04.09.25",extra:""},
+  {id:33,kit:"E6",chem:"Stabiliser",mixDate:"29/05/2025",maxRolls:"20",notes:"photoflo+formaldehyde",status:"Discarded",rolls:"3",extra:""},
+  {id:34,kit:"C41",chem:"Developer",mixDate:"07/06/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"3 on 06.06.25, 6 on 10.06.25",extra:""},
+  {id:35,kit:"ECN-2",chem:"Developer",mixDate:"07/06/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"7 on 06.06.25, 3 on 10.06.25",extra:""},
+  {id:36,kit:"ECN-2",chem:"Stop",mixDate:"07/06/2025",maxRolls:"18",notes:"SA 1%",status:"Discarded",rolls:"5 on 06.06.25, 3 on 10.06.25, 5 on 14.06.25",extra:""},
+  {id:37,kit:"C41",chem:"Developer",mixDate:"10/06/2025",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"1 on 10.06.25, 3 on 16.06.25, 3 on 19.06.25",extra:""},
+  {id:38,kit:"B&W",chem:"Developer",mixDate:"10/06/2025",maxRolls:"16",notes:"BT2B A&B",status:"Discarded",rolls:"7 on 10.06.25, 2 on 14.06.25, 5 on 25.06.25",extra:""},
+  {id:39,kit:"ECN-2",chem:"Developer",mixDate:"14/06/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"5 on 14.06.25",extra:""},
+  {id:40,kit:"ECN-2",chem:"Pre-Bath",mixDate:"14/06/2025",maxRolls:"20",notes:"Kodak",status:"Discarded",rolls:"5 on 14.06.25, 3 on 04.07.25",extra:""},
+  {id:41,kit:"C41",chem:"Fixer",mixDate:"16/06/2025",maxRolls:"18",notes:"Adofix",status:"Discarded",rolls:"3 on 16.06.25",extra:""},
+  {id:42,kit:"E6",chem:"First Dev",mixDate:"17/06/2025",maxRolls:"8",notes:"DIY",status:"Discarded",rolls:"3 on 17.06.25",extra:""},
+  {id:43,kit:"E6",chem:"Color Dev",mixDate:"17/06/2025",maxRolls:"8",notes:"DIY",status:"Discarded",rolls:"3 on 17.06.25",extra:""},
+  {id:44,kit:"C41",chem:"Fixer",mixDate:"19/06/2025",maxRolls:"18",notes:"Adofix",status:"Discarded",rolls:"3 on 19.06.25, 4 on 04.07.25, 7 rolls, 3 rolls",extra:""},
+  {id:45,kit:"B&W",chem:"Fixer",mixDate:"24/06/2025",maxRolls:"20",notes:"Adofix",status:"Discarded",rolls:"5 on 24.06.25",extra:""},
+  {id:46,kit:"C41",chem:"Developer",mixDate:"30/06/2025",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"2 on 30.06.25, 4 on 04.07.25",extra:""},
+  {id:47,kit:"B&W",chem:"Developer",mixDate:"30/06/2025",maxRolls:"-",notes:"510-Pyro",status:"Fresh",rolls:"",extra:""},
+  {id:48,kit:"B&W",chem:"Fixer",mixDate:"04/07/2025",maxRolls:"20",notes:"Adofix",status:"Discarded",rolls:"3 on 04.07.25, 8 on 20.07.25, 2 on 16.08.25",extra:""},
+  {id:49,kit:"ECN-2",chem:"Developer",mixDate:"04/07/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"3 on 03.07.25",extra:""},
+  {id:50,kit:"ECN-2",chem:"Developer",mixDate:"02/08/2025",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"8 on 01.08.25",extra:""},
+  {id:51,kit:"ECN-2",chem:"Stop",mixDate:"02/08/2025",maxRolls:"16",notes:"Sulphuric Acid",status:"Discarded",rolls:"8 Rolls, 7 Rolls, 3 on 04.09.25",extra:""},
+  {id:52,kit:"ECN-2",chem:"Pre-Bath",mixDate:"02/08/2025",maxRolls:"20",notes:"Photon",status:"Discarded",rolls:"8 Rolls, 7 Rolls, 3 on 04.09.25",extra:""},
+  {id:53,kit:"ECN-2",chem:"Bleach",mixDate:"02/08/2025",maxRolls:"40",notes:"Photon",status:"Discarded",rolls:"8 Rolls, 7 Rolls, 3 on 04.09.25, 9 on 11.10",extra:""},
+  {id:54,kit:"C41",chem:"Developer",mixDate:"08/08/2025",maxRolls:"10",notes:"Developer",status:"Discarded",rolls:"7 Rolls",extra:""},
+  {id:55,kit:"C41",chem:"Bleach",mixDate:"08/08/2025",maxRolls:"40",notes:"Photon",status:"Discarded",rolls:"7 Rolls, 2 rolls, 3 rolls, 5 on 10.09.25, 6",extra:""},
+  {id:56,kit:"ECN-2",chem:"Developer",mixDate:"22/08/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"7 Rolls, 3 rolls",extra:""},
+  {id:57,kit:"C41",chem:"Developer",mixDate:"30/08/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"3 rolls",extra:""},
+  {id:58,kit:"B&W",chem:"Fixer",mixDate:"03/09/2025",maxRolls:"20",notes:"F-24",status:"Discarded",rolls:"1 on 04.09.25, 1 on 10.09.25, 4 on 28.09.25",extra:""},
+  {id:59,kit:"E6",chem:"First Dev",mixDate:"03/09/2025",maxRolls:"3",notes:"DIY",status:"Discarded",rolls:"3 on 04.09.25 + 1",extra:""},
+  {id:60,kit:"E6",chem:"Color Dev",mixDate:"03/09/2025",maxRolls:"3",notes:"DIY",status:"Discarded",rolls:"3 on 04.09.25 + 1",extra:""},
+  {id:61,kit:"ECN-2",chem:"Developer",mixDate:"04/09/2025",maxRolls:"8",notes:"Kodak",status:"Discarded",rolls:"3 on 04.09.25",extra:""},
+  {id:62,kit:"ECN-2",chem:"Fixer",mixDate:"04/09/2025",maxRolls:"10",notes:"F-24",status:"Discarded",rolls:"3 on 04.09.25",extra:""},
+  {id:63,kit:"E6",chem:"Stabiliser",mixDate:"04/09/2025",maxRolls:"10",notes:"Formaldehyde",status:"Discarded",rolls:"3 on 04.09.25",extra:""},
+  {id:64,kit:"C41",chem:"Developer",mixDate:"10/09/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"5 on 10.09.25",extra:""},
+  {id:65,kit:"C41",chem:"Fixer",mixDate:"10/09/2025",maxRolls:"12",notes:"Sod Thio",status:"Discarded",rolls:"5 on 10.09.25, 6 on 22.09.25",extra:""},
+  {id:66,kit:"C41",chem:"Developer",mixDate:"22/09/2025",maxRolls:"6",notes:"Photon",status:"Discarded",rolls:"4 on 22.09.25, 2 on 22.09.25, 4 on 28.09.25",extra:""},
+  {id:67,kit:"C41",chem:"Fixer",mixDate:"28/09/2025",maxRolls:"16",notes:"Elford",status:"Discarded",rolls:"4 on 28.09.25, 9 on 03.10.25, 9 on 09.10.25",extra:""},
+  {id:68,kit:"C41",chem:"Developer",mixDate:"03/10/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"8 on 03.10.25",extra:""},
+  {id:69,kit:"C41",chem:"Developer",mixDate:"04/10/2025",maxRolls:"6",notes:"Photon",status:"Discarded",rolls:"8 on 09.10.25",extra:""},
+  {id:70,kit:"B&W",chem:"Developer",mixDate:"07/10/2025",maxRolls:"10",notes:"BT2B",status:"Discarded",rolls:"7 on 07.10.25, 1 on 16.10.25",extra:""},
+  {id:71,kit:"B&W",chem:"Fixer",mixDate:"07/10/2025",maxRolls:"20",notes:"Elford",status:"Discarded",rolls:"7 on 07.10.25, 1 on 16.10.25, 3 on 18.01.26",extra:""},
+  {id:72,kit:"ECN-2",chem:"Pre-Bath",mixDate:"11/10/2025",maxRolls:"16",notes:"Kodak",status:"Discarded",rolls:"9 on 11.10.25, 7 on 16.10.25",extra:""},
+  {id:73,kit:"ECN-2",chem:"Developer",mixDate:"11/10/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"9 on 11.10.25",extra:""},
+  {id:74,kit:"ECN-2",chem:"Stop",mixDate:"11/10/2025",maxRolls:"20",notes:"SA 1%",status:"Discarded",rolls:"9 on 11.10.25, 8 on 16.10.25",extra:""},
+  {id:75,kit:"ECN-2",chem:"Fixer",mixDate:"11/10/2025",maxRolls:"20",notes:"Elford",status:"Discarded",rolls:"9 on 11.10.25, 8 on 16.10.25",extra:""},
+  {id:76,kit:"C41",chem:"Developer",mixDate:"15/10/2025",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"5 on 15.10.25",extra:""},
+  {id:77,kit:"C41",chem:"Bleach",mixDate:"15/10/2025",maxRolls:"40",notes:"Photon",status:"Discarded",rolls:"5 on 15.10.25, 11 on 21.01.26",extra:""},
+  {id:78,kit:"C41",chem:"Fixer",mixDate:"15/10/2025",maxRolls:"20",notes:"Elford",status:"Discarded",rolls:"5 on 15.10.25",extra:""},
+  {id:79,kit:"ECN-2",chem:"Developer",mixDate:"16/10/2025",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"8 on 16.10.26",extra:""},
+  {id:80,kit:"ECN-2",chem:"Bleach",mixDate:"16/10/2025",maxRolls:"40",notes:"Photon",status:"Discarded",rolls:"8 on 16.10.25",extra:""},
+  {id:81,kit:"E6",chem:"First Dev",mixDate:"20/10/2025",maxRolls:"8",notes:"DIY",status:"Discarded",rolls:"2 on 20.10.25",extra:""},
+  {id:82,kit:"E6",chem:"Color Dev",mixDate:"20/10/2025",maxRolls:"8",notes:"DIY",status:"Discarded",rolls:"2 on 20.10.25",extra:""},
+  {id:83,kit:"B&W",chem:"Developer",mixDate:"18/01/2026",maxRolls:"12",notes:"D96",status:"Fresh",rolls:"",extra:""},
+  {id:84,kit:"C41",chem:"Developer",mixDate:"21/01/2026",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"9 on 21.01.26",extra:""},
+  {id:85,kit:"C41",chem:"Fixer",mixDate:"21/01/2026",maxRolls:"14",notes:"Photon",status:"Discarded",rolls:"11 on 21.01.26",extra:""},
+  {id:86,kit:"B&W",chem:"Developer",mixDate:"21/01/2026",maxRolls:"",notes:"ADOX HC-110",status:"Fresh",rolls:"",extra:""},
+  {id:87,kit:"C41",chem:"Developer",mixDate:"21/01/2026",maxRolls:"3",notes:"Photon",status:"Discarded",rolls:"2 on 21.01.26",extra:""},
+  {id:88,kit:"C41",chem:"Developer",mixDate:"27/01/2026",maxRolls:"8",notes:"Photon",status:"Discarded",rolls:"8 on 24.01.26",extra:""},
+  {id:89,kit:"C41",chem:"Bleach",mixDate:"27/01/2026",maxRolls:"20",notes:"K3[Fe(CN)6] Bleach",status:"Discarded",rolls:"8 on 24.01.26",extra:""},
+  {id:90,kit:"C41",chem:"Fixer",mixDate:"27/01/2026",maxRolls:"12",notes:"Photon",status:"Discarded",rolls:"8 on 24.01.26",extra:""},
+  {id:91,kit:"C41",chem:"Developer",mixDate:"27/01/2026",maxRolls:"6",notes:"Photon",status:"Discarded",rolls:"5 on 27.01.26",extra:""},
+  {id:92,kit:"ECN-2",chem:"Pre-Bath",mixDate:"29/01/2026",maxRolls:"16",notes:"DIY Kodak",status:"Discarded",rolls:"5 on 28.01.26, 5 on 29.01.26, 8 on 28.02.26",extra:""},
+  {id:93,kit:"ECN-2",chem:"Developer",mixDate:"29/01/2026",maxRolls:"10",notes:"Kodak",status:"Discarded",rolls:"5 on 28.01.26, 5 on 29.01.26",extra:""},
+  {id:94,kit:"ECN-2",chem:"Stop",mixDate:"29/01/2026",maxRolls:"16",notes:"10% H2SO4",status:"Discarded",rolls:"5 on 28.01.26, 5 on 29.01.26",extra:""},
+  {id:95,kit:"ECN-2",chem:"Bleach",mixDate:"29/01/2026",maxRolls:"16",notes:"K3[Fe(CN)6] Bleach",status:"Discarded",rolls:"5 on 28.01.26, 5 on 29.01.26",extra:""},
+  {id:96,kit:"ECN-2",chem:"Fixer",mixDate:"02/02/2026",maxRolls:"12",notes:"Photon",status:"Discarded",rolls:"5 on 28.01.26, 5 on 29.01.26",extra:""},
+  {id:97,kit:"C41",chem:"Developer",mixDate:"02/02/2026",maxRolls:"10",notes:"Photon",status:"Discarded",rolls:"10 on 02.02.26",extra:""},
+  {id:98,kit:"C41",chem:"Developer",mixDate:"02/02/2026",maxRolls:"6",notes:"Photon",status:"Discarded",rolls:"6 on 09.02.26",extra:""},
+  {id:99,kit:"C41",chem:"Bleach",mixDate:"02/02/2026",maxRolls:"40",notes:"Photon",status:"Fresh",rolls:"10 on 02.02.26, 6 on 09.02.26",extra:""},
+  {id:100,kit:"C41",chem:"Fixer",mixDate:"02/02/2026",maxRolls:"20",notes:"Photon",status:"Discarded",rolls:"10 on 02.02.26, 6 on 09.02.26",extra:""},
+  {id:101,kit:"ECN-2",chem:"Developer",mixDate:"09/02/2026",maxRolls:"8",notes:"DIY",status:"Discarded",rolls:"4 on 09.02.26",extra:""},
+  {id:102,kit:"ECN-2",chem:"Bleach",mixDate:"09/02/2026",maxRolls:"40",notes:"Photon",status:"Fresh",rolls:"4 on 09.02.26, 10 on 28.02.26, 1 on 08.03.26",extra:""},
+  {id:103,kit:"ECN-2",chem:"Fixer",mixDate:"09/02/2026",maxRolls:"20",notes:"Photon",status:"Discarded",rolls:"4 on 09.02.26, 10 on 28.02.26",extra:""},
+  {id:104,kit:"B&W",chem:"Developer",mixDate:"09/02/2026",maxRolls:"-",notes:"510-Pyro",status:"Fresh",rolls:"",extra:""},
+  {id:105,kit:"ECN-2",chem:"Developer",mixDate:"28/02/2026",maxRolls:"10",notes:"DIY",status:"Discarded",rolls:"10 on 28.02.26",extra:""},
+  {id:106,kit:"ECN-2",chem:"Stop",mixDate:"09/03/2026",maxRolls:"16",notes:"DIY",status:"Fresh",rolls:"1 on 08.03.26",extra:""},
+  {id:107,kit:"ECN-2",chem:"Fixer",mixDate:"09/03/2026",maxRolls:"16",notes:"Photon",status:"Fresh",rolls:"1 on 08.03.26",extra:""},
+];
+
+const KIT_COLORS = {
+  "C41": { bg: "#1a2f1a", accent: "#4ade80", badge: "#166534", text: "#bbf7d0" },
+  "ECN-2": { bg: "#1a1a2f", accent: "#818cf8", badge: "#312e81", text: "#c7d2fe" },
+  "E6": { bg: "#2f1a1a", accent: "#fb923c", badge: "#7c2d12", text: "#fed7aa" },
+  "B&W": { bg: "#1a1a1a", accent: "#a1a1aa", badge: "#3f3f46", text: "#e4e4e7" },
+};
+
+const CHEM_ORDER = ["Pre-Bath", "Developer", "First Dev", "Color Dev", "Stop", "Bleach", "Fixer", "Stabiliser"];
+
+function parseRollCount(rollStr) {
+  if (!rollStr || rollStr.trim() === "") return 0;
+  let total = 0;
+  const parts = rollStr.split(",");
+  for (const p of parts) {
+    const t = p.trim();
+    const m = t.match(/^(\d+)/);
+    if (m) total += parseInt(m[1]);
+  }
+  return total;
+}
+
+function parseMaxRolls(s) {
+  if (!s || s === "-" || s === "") return null;
+  const m = s.match(/(\d+)/);
+  return m ? parseInt(m[1]) : null;
+}
+
+function parseDateForSort(d) {
+  if (!d || d === "-") return 0;
+  const parts = d.split("/");
+  if (parts.length === 3) return new Date(parts[2], parts[1] - 1, parts[0]).getTime();
+  return 0;
+}
+
+function Badge({ children, color, bg }) {
+  return (
+    <span style={{
+      display: "inline-block", padding: "2px 10px", borderRadius: "999px",
+      fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em",
+      color: color, background: bg, textTransform: "uppercase",
+    }}>{children}</span>
+  );
+}
+
+function ProgressBar({ used, max, accent }) {
+  if (!max) return <span style={{ color: "#666", fontSize: 12, fontStyle: "italic" }}>no limit</span>;
+  const pct = Math.min((used / max) * 100, 100);
+  const isOver = used > max;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "#27272a", overflow: "hidden" }}>
+        <div style={{
+          width: `${pct}%`, height: "100%", borderRadius: 3,
+          background: isOver ? "#ef4444" : accent,
+          transition: "width 0.4s ease",
+        }} />
+      </div>
+      <span style={{ fontSize: 12, color: isOver ? "#ef4444" : "#a1a1aa", fontWeight: 600, minWidth: 45, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
+        {used}/{max}
+      </span>
+    </div>
+  );
+}
+
+function ChemCard({ item, colors, onToggle, expanded }) {
+  const used = parseRollCount(item.rolls);
+  const max = parseMaxRolls(item.maxRolls);
+  const isFresh = item.status === "Fresh";
+
+  return (
+    <div
+      onClick={onToggle}
+      style={{
+        background: "#18181b",
+        borderRadius: 12,
+        padding: "14px 16px",
+        cursor: "pointer",
+        borderLeft: `3px solid ${colors.accent}`,
+        transition: "all 0.2s ease",
+        position: "relative",
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = "#1f1f23"}
+      onMouseLeave={e => e.currentTarget.style.background = "#18181b"}
+    >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
+            <span style={{ fontWeight: 700, color: "#fafafa", fontSize: 15, fontFamily: "'JetBrains Mono', monospace" }}>{item.chem}</span>
+            <Badge color={colors.text} bg={colors.badge}>{item.kit}</Badge>
+            {isFresh && <Badge color="#22c55e" bg="#052e16">ACTIVE</Badge>}
+            {!isFresh && <Badge color="#71717a" bg="#27272a">USED</Badge>}
+          </div>
+          <div style={{ display: "flex", gap: 16, color: "#71717a", fontSize: 12, marginBottom: 6 }}>
+            <span>{item.notes}</span>
+            <span>{item.mixDate}</span>
+          </div>
+          <ProgressBar used={used} max={max} accent={colors.accent} />
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{
+          marginTop: 12, paddingTop: 12, borderTop: "1px solid #27272a",
+          fontSize: 13, color: "#a1a1aa", lineHeight: 1.6,
+        }}>
+          {item.rolls && (
+            <div style={{ marginBottom: 6 }}>
+              <span style={{ color: "#71717a", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Roll Log</span>
+              <div style={{ color: "#d4d4d8", marginTop: 2, fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
+                {item.rolls.split(",").map((r, i) => (
+                  <span key={i} style={{ display: "inline-block", background: "#27272a", borderRadius: 4, padding: "1px 6px", margin: "2px 4px 2px 0" }}>
+                    {r.trim()}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {item.extra && (
+            <div>
+              <span style={{ color: "#71717a", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes</span>
+              <div style={{ color: "#fbbf24", marginTop: 2 }}>{item.extra}</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AddBatchModal({ onClose, onAdd, nextId }) {
+  const [form, setForm] = useState({ kit: "C41", chem: "Developer", mixDate: "", maxRolls: "", notes: "", status: "Fresh", rolls: "", extra: "" });
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #3f3f46",
+    background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", boxSizing: "border-box",
+    fontFamily: "'JetBrains Mono', monospace",
+  };
+  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 12, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
+      onClick={onClose}>
+      <div style={{ background: "#09090b", borderRadius: 16, padding: 24, maxWidth: 440, width: "100%", border: "1px solid #27272a", maxHeight: "90vh", overflowY: "auto" }}
+        onClick={e => e.stopPropagation()}>
+        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 20, fontFamily: "'Space Mono', monospace" }}>New Batch</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <label style={labelStyle}>Kit</label>
+            <select value={form.kit} onChange={e => set("kit", e.target.value)} style={inputStyle}>
+              {["C41", "ECN-2", "E6", "B&W"].map(k => <option key={k} value={k}>{k}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Chemistry</label>
+            <select value={form.chem} onChange={e => set("chem", e.target.value)} style={inputStyle}>
+              {CHEM_ORDER.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label style={labelStyle}>Mix Date</label>
+            <input placeholder="DD/MM/YYYY" value={form.mixDate} onChange={e => set("mixDate", e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={labelStyle}>Max Rolls</label>
+            <input placeholder="e.g. 10" value={form.maxRolls} onChange={e => set("maxRolls", e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Brand / Notes</label>
+          <input placeholder="e.g. Photon, Kodak, DIY..." value={form.notes} onChange={e => set("notes", e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Roll Log</label>
+          <textarea placeholder="e.g. 5 on 25.03.26, 3 on 27.03.26" value={form.rolls} onChange={e => set("rolls", e.target.value)}
+            style={{ ...inputStyle, minHeight: 60, resize: "vertical" }} />
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <label style={labelStyle}>Additional Notes</label>
+          <input value={form.extra} onChange={e => set("extra", e.target.value)} style={inputStyle} />
+        </div>
+        <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
+          <button onClick={onClose}
+            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46", background: "transparent", color: "#a1a1aa", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
+            Cancel
+          </button>
+          <button
+            onClick={() => { if (form.mixDate) { onAdd({ ...form, id: nextId }); onClose(); } }}
+            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: "#fafafa", color: "#09090b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
+            Add Batch
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function App() {
+  const [data, setData] = useState(INITIAL_DATA);
+  const [filterKit, setFilterKit] = useState("All");
+  const [filterStatus, setFilterStatus] = useState("All");
+  const [searchQ, setSearchQ] = useState("");
+  const [expanded, setExpanded] = useState(null);
+  const [showAdd, setShowAdd] = useState(false);
+  const [sortBy, setSortBy] = useState("date_desc");
+
+  const loadStored = useCallback(async () => {
+    try {
+      const res = await window.storage.get("chem-tracker-data");
+      if (res && res.value) setData(JSON.parse(res.value));
+    } catch { /* first load */ }
+  }, []);
+
+  useEffect(() => { loadStored(); }, [loadStored]);
+
+  const save = useCallback(async (newData) => {
+    setData(newData);
+    try { await window.storage.set("chem-tracker-data", JSON.stringify(newData)); } catch {}
+  }, []);
+
+  const handleAdd = (batch) => save([...data, batch]);
+
+  const handleStatusToggle = (id) => {
+    save(data.map(d => d.id === id ? { ...d, status: d.status === "Fresh" ? "Discarded" : "Fresh" } : d));
+  };
+
+  let filtered = data.filter(d => {
+    if (filterKit !== "All" && d.kit !== filterKit) return false;
+    if (filterStatus !== "All" && d.status !== filterStatus) return false;
+    if (searchQ) {
+      const q = searchQ.toLowerCase();
+      return (d.chem + d.notes + d.kit + d.rolls + d.extra).toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (sortBy === "date_desc") return parseDateForSort(b.mixDate) - parseDateForSort(a.mixDate);
+    if (sortBy === "date_asc") return parseDateForSort(a.mixDate) - parseDateForSort(b.mixDate);
+    if (sortBy === "kit") return a.kit.localeCompare(b.kit);
+    return 0;
+  });
+
+  const freshCount = data.filter(d => d.status === "Fresh").length;
+  const discardedCount = data.filter(d => d.status === "Discarded").length;
+
+  const kits = ["All", "C41", "ECN-2", "E6", "B&W"];
+
+  const pillStyle = (active) => ({
+    padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer",
+    fontSize: 13, fontWeight: 600,
+    background: active ? "#fafafa" : "#27272a",
+    color: active ? "#09090b" : "#a1a1aa",
+    transition: "all 0.15s ease",
+    whiteSpace: "nowrap",
+  });
+
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#09090b", color: "#fafafa",
+      fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
+    }}>
+      <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+
+      <div style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px" }}>
+        {/* Header */}
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: 11, color: "#52525b", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Eternus Film</div>
+              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em" }}>Chemistry Tracker</h1>
+            </div>
+            <button onClick={() => setShowAdd(true)} style={{
+              width: 44, height: 44, borderRadius: 12, border: "none",
+              background: "#fafafa", color: "#09090b", fontSize: 24, cursor: "pointer",
+              display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700,
+            }}>+</button>
+          </div>
+
+          {/* Stats */}
+          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+            <div style={{ flex: 1, background: "#052e16", borderRadius: 10, padding: "10px 14px" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#4ade80" }}>{freshCount}</div>
+              <div style={{ fontSize: 11, color: "#86efac", textTransform: "uppercase", letterSpacing: "0.1em" }}>Active</div>
+            </div>
+            <div style={{ flex: 1, background: "#18181b", borderRadius: 10, padding: "10px 14px" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#71717a" }}>{discardedCount}</div>
+              <div style={{ fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Discarded</div>
+            </div>
+            <div style={{ flex: 1, background: "#18181b", borderRadius: 10, padding: "10px 14px" }}>
+              <div style={{ fontSize: 22, fontWeight: 700, color: "#fafafa" }}>{data.length}</div>
+              <div style={{ fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Total</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Search */}
+        <input
+          placeholder="Search chemistry, brand, notes..."
+          value={searchQ}
+          onChange={e => setSearchQ(e.target.value)}
+          style={{
+            width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #27272a",
+            background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", marginBottom: 14,
+            boxSizing: "border-box", fontFamily: "'JetBrains Mono', monospace",
+          }}
+        />
+
+        {/* Filters */}
+        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 8 }}>
+          {kits.map(k => (
+            <button key={k} onClick={() => setFilterKit(k)} style={pillStyle(filterKit === k)}>{k}</button>
+          ))}
+        </div>
+        <div style={{ display: "flex", gap: 6, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
+          {["All", "Fresh", "Discarded"].map(s => (
+            <button key={s} onClick={() => setFilterStatus(s)} style={pillStyle(filterStatus === s)}>
+              {s === "Fresh" ? "Active" : s}
+            </button>
+          ))}
+          <div style={{ marginLeft: "auto" }}>
+            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
+              background: "#27272a", color: "#a1a1aa", border: "none", borderRadius: 8,
+              padding: "6px 10px", fontSize: 12, cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+            }}>
+              <option value="date_desc">Newest first</option>
+              <option value="date_asc">Oldest first</option>
+              <option value="kit">By kit</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Results count */}
+        <div style={{ fontSize: 12, color: "#52525b", marginBottom: 10, fontWeight: 600 }}>
+          {filtered.length} batch{filtered.length !== 1 ? "es" : ""}
+        </div>
+
+        {/* Cards */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {filtered.map(item => {
+            const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
+            return (
+              <div key={item.id} style={{ position: "relative" }}>
+                <ChemCard
+                  item={item}
+                  colors={colors}
+                  expanded={expanded === item.id}
+                  onToggle={() => setExpanded(expanded === item.id ? null : item.id)}
+                />
+                {expanded === item.id && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleStatusToggle(item.id); }}
+                    style={{
+                      position: "absolute", top: 14, right: 14, fontSize: 11, padding: "4px 10px",
+                      borderRadius: 6, border: "1px solid #3f3f46", background: "transparent",
+                      color: item.status === "Fresh" ? "#ef4444" : "#4ade80", cursor: "pointer",
+                      fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+                    }}>
+                    {item.status === "Fresh" ? "DISCARD" : "REACTIVATE"}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 && (
+          <div style={{ textAlign: "center", padding: 40, color: "#3f3f46" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>~</div>
+            <div style={{ fontSize: 14 }}>No batches match your filters</div>
+          </div>
+        )}
+      </div>
+
+      {showAdd && (
+        <AddBatchModal
+          onClose={() => setShowAdd(false)}
+          onAdd={handleAdd}
+          nextId={Math.max(...data.map(d => d.id)) + 1}
+        />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  return <h1>Hello</h1>;
+}
+
+ReactDOM.render(<App />, document.getElementById('root'));
+
+</script>
+
+</body>
+</html>
