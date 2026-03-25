@@ -28,21 +28,19 @@
     --safe-bot: env(safe-area-inset-bottom, 0px);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { 
-    background: var(--bg); color: var(--text); font-family: var(--font);
-    min-height: 100vh; min-height: 100dvh; overflow-x: hidden;
-    -webkit-font-smoothing: antialiased;
-  }
+  html, body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; min-height: 100dvh; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
   input, select, textarea, button { font-family: inherit; }
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: transparent; } ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
-  /* Scrollbar */
-  ::-webkit-scrollbar { width: 4px; }
-  ::-webkit-scrollbar-track { background: transparent; }
-  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .app { max-width: 560px; margin: 0 auto; padding: 0 16px; padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bot) + 80px); }
+  .page { display: none; } .page.active { display: block; }
 
-  /* Layout */
-  .app { max-width: 560px; margin: 0 auto; padding: 0 16px; padding-top: calc(var(--safe-top) + 16px); padding-bottom: calc(var(--safe-bot) + 100px); }
-  
+  /* Bottom Nav */
+  .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: #111113; border-top: 1px solid var(--border); display: flex; justify-content: center; gap: 0; padding-bottom: var(--safe-bot); z-index: 50; }
+  .nav-btn { flex: 1; max-width: 180px; padding: 10px 0 8px; background: none; border: none; color: var(--text4); cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 10px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--mono); transition: color 0.15s; }
+  .nav-btn.active { color: var(--text); }
+  .nav-btn .nav-icon { font-size: 20px; line-height: 1; }
+
   /* Header */
   .header { margin-bottom: 20px; }
   .header-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
@@ -51,264 +49,242 @@
   .brand { font-size: 10px; color: var(--text4); font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-family: var(--mono); }
   .title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; margin-top: 1px; }
   .header-actions { display: flex; gap: 8px; }
-  .icon-btn {
-    width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text2); cursor: pointer;
-    display: flex; align-items: center; justify-content: center; font-size: 18px;
-    transition: all 0.15s;
-  }
+  .icon-btn { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.15s; }
   .icon-btn:hover { background: var(--surface2); color: var(--text); }
   .icon-btn.primary { background: var(--text); color: var(--bg); border: none; font-weight: 700; font-size: 22px; }
-  .icon-btn.primary:hover { opacity: 0.85; }
 
   /* Stats row */
   .stats { display: flex; gap: 8px; margin-bottom: 16px; }
   .stat { flex: 1; border-radius: 10px; padding: 10px 12px; }
   .stat-val { font-size: 20px; font-weight: 700; font-family: var(--mono); }
   .stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 600; margin-top: 1px; }
-  .stat.active { background: var(--green-bg); }
-  .stat.active .stat-val { color: var(--green); }
-  .stat.active .stat-label { color: #86efac; }
-  .stat.total { background: var(--surface); }
-  .stat.total .stat-val { color: var(--text); }
-  .stat.total .stat-label { color: var(--text4); }
-  .stat.discarded { background: var(--surface); }
-  .stat.discarded .stat-val { color: var(--text3); }
-  .stat.discarded .stat-label { color: var(--text4); }
+  .stat.active { background: var(--green-bg); } .stat.active .stat-val { color: var(--green); } .stat.active .stat-label { color: #86efac; }
+  .stat.total { background: var(--surface); } .stat.total .stat-val { color: var(--text); } .stat.total .stat-label { color: var(--text4); }
+  .stat.discarded { background: var(--surface); } .stat.discarded .stat-val { color: var(--text3); } .stat.discarded .stat-label { color: var(--text4); }
 
-  /* Search */
+  /* Search & Filters */
   .search-wrap { position: relative; margin-bottom: 10px; }
   .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text4); font-size: 14px; pointer-events: none; }
-  .search {
-    width: 100%; padding: 10px 12px 10px 34px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); font-size: 14px; outline: none; font-family: var(--mono);
-  }
+  .search { width: 100%; padding: 10px 12px 10px 34px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 14px; outline: none; font-family: var(--mono); }
   .search:focus { border-color: var(--border2); background: var(--surface2); }
   .search::placeholder { color: var(--text4); }
-
-  /* Filter pills */
   .filters { display: flex; gap: 5px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; margin-bottom: 6px; }
   .filters::-webkit-scrollbar { display: none; }
-  .pill {
-    padding: 6px 13px; border-radius: 999px; border: none; cursor: pointer;
-    font-size: 12px; font-weight: 600; white-space: nowrap;
-    background: var(--surface2); color: var(--text3); transition: all 0.15s;
-  }
+  .pill { padding: 6px 13px; border-radius: 999px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; white-space: nowrap; background: var(--surface2); color: var(--text3); transition: all 0.15s; }
   .pill.active { background: var(--text); color: var(--bg); }
-  .pill:hover:not(.active) { background: var(--border); }
   .filter-row { display: flex; gap: 5px; margin-bottom: 12px; align-items: center; flex-wrap: wrap; }
-  .sort-select {
-    margin-left: auto; background: var(--surface2); color: var(--text3); border: none;
-    border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-family: var(--mono);
-  }
+  .sort-select { margin-left: auto; background: var(--surface2); color: var(--text3); border: none; border-radius: 8px; padding: 6px 10px; font-size: 11px; cursor: pointer; font-family: var(--mono); }
   .count { font-size: 11px; color: var(--text4); font-weight: 600; margin-bottom: 8px; font-family: var(--mono); }
 
   /* Cards */
   .cards { display: flex; flex-direction: column; gap: 6px; }
-  .card {
-    background: var(--surface); border-radius: 12px; padding: 14px 14px;
-    cursor: pointer; border-left: 3px solid var(--text4);
-    transition: background 0.15s;
-    -webkit-user-select: none; user-select: none;
-  }
+  .card { background: var(--surface); border-radius: 12px; padding: 14px; cursor: pointer; border-left: 3px solid var(--text4); transition: background 0.15s; -webkit-user-select: none; user-select: none; }
   .card:active { background: var(--surface2); }
-  .card.kit-c41 { border-left-color: var(--green); }
-  .card.kit-ecn2 { border-left-color: var(--indigo); }
-  .card.kit-e6 { border-left-color: var(--orange); }
-  .card.kit-bw { border-left-color: var(--gray); }
-
+  .card.kit-c41 { border-left-color: var(--green); } .card.kit-ecn2 { border-left-color: var(--indigo); } .card.kit-e6 { border-left-color: var(--orange); } .card.kit-bw { border-left-color: var(--gray); }
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
   .card-main { flex: 1; min-width: 0; }
   .card-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 3px; }
-  .chem-name { font-weight: 700; font-size: 15px; color: var(--text); }
-  .badge {
-    display: inline-block; padding: 1px 8px; border-radius: 999px;
-    font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
-    font-family: var(--mono);
-  }
-  .badge.c41 { color: #bbf7d0; background: var(--green-dim); }
-  .badge.ecn2 { color: #c7d2fe; background: var(--indigo-dim); }
-  .badge.e6 { color: #fed7aa; background: var(--orange-dim); }
-  .badge.bw { color: #e4e4e7; background: var(--gray-dim); }
-  .badge.fresh { color: #4ade80; background: #052e16; }
-  .badge.discarded { color: var(--text4); background: var(--surface2); }
-
+  .chem-name { font-weight: 700; font-size: 15px; }
+  .badge { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; font-family: var(--mono); }
+  .badge.c41 { color: #bbf7d0; background: var(--green-dim); } .badge.ecn2 { color: #c7d2fe; background: var(--indigo-dim); } .badge.e6 { color: #fed7aa; background: var(--orange-dim); } .badge.bw { color: #e4e4e7; background: var(--gray-dim); }
+  .badge.fresh { color: #4ade80; background: #052e16; } .badge.discarded { color: var(--text4); background: var(--surface2); }
   .card-meta { display: flex; gap: 14px; color: var(--text4); font-size: 12px; margin-bottom: 6px; font-family: var(--mono); }
-  
-  /* Progress bar */
   .progress-wrap { display: flex; align-items: center; gap: 8px; }
   .progress-bar { flex: 1; height: 5px; border-radius: 3px; background: var(--border); overflow: hidden; }
   .progress-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-  .progress-fill.c41 { background: var(--green); }
-  .progress-fill.ecn2 { background: var(--indigo); }
-  .progress-fill.e6 { background: var(--orange); }
-  .progress-fill.bw { background: var(--gray); }
-  .progress-fill.over { background: var(--red); }
+  .progress-fill.c41 { background: var(--green); } .progress-fill.ecn2 { background: var(--indigo); } .progress-fill.e6 { background: var(--orange); } .progress-fill.bw { background: var(--gray); } .progress-fill.over { background: var(--red); }
   .progress-text { font-size: 11px; color: var(--text3); font-weight: 600; min-width: 40px; text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
   .no-limit { font-size: 11px; color: var(--text4); font-style: italic; }
-
-  /* Expanded card detail */
   .card-detail { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
   .detail-label { color: var(--text4); font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-family: var(--mono); }
   .roll-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
   .roll-chip { display: inline-block; background: var(--surface2); border-radius: 4px; padding: 2px 7px; font-size: 11px; color: var(--text2); font-family: var(--mono); }
   .detail-note { color: var(--amber); font-size: 13px; line-height: 1.5; }
   .card-actions { display: flex; gap: 6px; margin-top: 10px; }
-  .action-btn {
-    padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border);
-    background: transparent; cursor: pointer; font-size: 11px; font-weight: 700;
-    font-family: var(--mono); transition: all 0.15s;
-  }
-  .action-btn.discard { color: var(--red); border-color: #7f1d1d44; }
-  .action-btn.activate { color: var(--green); border-color: #14532d44; }
-  .action-btn.add-rolls { color: var(--indigo); border-color: #312e8144; }
-  .action-btn:hover { background: var(--surface2); }
-
-  /* Empty state */
+  .action-btn { padding: 6px 14px; border-radius: 8px; border: 1px solid var(--border); background: transparent; cursor: pointer; font-size: 11px; font-weight: 700; font-family: var(--mono); transition: all 0.15s; }
+  .action-btn.discard { color: var(--red); } .action-btn.activate { color: var(--green); } .action-btn.add-rolls { color: var(--indigo); }
   .empty { text-align: center; padding: 50px 20px; color: var(--text4); }
-  .empty-icon { font-size: 36px; margin-bottom: 8px; opacity: 0.4; }
-  .empty-text { font-size: 14px; }
 
-  /* Modal overlay */
-  .modal-overlay {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex;
-    align-items: flex-end; justify-content: center; z-index: 100;
-    animation: fadeIn 0.2s ease;
-  }
+  /* Modal */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: flex; align-items: flex-end; justify-content: center; z-index: 100; animation: fadeIn 0.2s ease; }
   @media (min-width: 540px) { .modal-overlay { align-items: center; } }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-  .modal {
-    background: var(--bg); border-radius: 20px 20px 0 0; padding: 24px 20px calc(var(--safe-bot) + 24px);
-    width: 100%; max-width: 480px; max-height: 90vh; max-height: 90dvh;
-    overflow-y: auto; animation: slideUp 0.25s ease; border: 1px solid var(--border);
-  }
+  @keyframes fadeIn { from { opacity: 0; } }
+  @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } }
+  .modal { background: var(--bg); border-radius: 20px 20px 0 0; padding: 24px 20px calc(var(--safe-bot) + 24px); width: 100%; max-width: 480px; max-height: 90vh; max-height: 90dvh; overflow-y: auto; animation: slideUp 0.25s ease; border: 1px solid var(--border); }
   @media (min-width: 540px) { .modal { border-radius: 20px; margin: 20px; } }
-  .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.02em; }
+  .modal h2 { font-size: 18px; font-weight: 700; margin-bottom: 18px; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .form-group { margin-bottom: 0; }
   .form-group.full { grid-column: 1 / -1; }
   .form-label { display: block; font-size: 10px; font-weight: 700; color: var(--text3); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; font-family: var(--mono); }
-  .form-input {
-    width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); font-size: 14px; outline: none;
-    font-family: var(--mono); transition: border-color 0.15s;
-  }
+  .form-input { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-size: 14px; outline: none; font-family: var(--mono); }
   .form-input:focus { border-color: var(--border2); }
-  .form-input::placeholder { color: var(--text4); }
   textarea.form-input { min-height: 56px; resize: vertical; }
   .modal-actions { display: flex; gap: 8px; margin-top: 18px; }
-  .modal-btn {
-    flex: 1; padding: 11px; border-radius: 10px; border: none; cursor: pointer;
-    font-size: 14px; font-weight: 700; transition: opacity 0.15s;
-  }
-  .modal-btn:hover { opacity: 0.85; }
+  .modal-btn { flex: 1; padding: 11px; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; font-weight: 700; }
   .modal-btn.cancel { background: var(--surface2); color: var(--text3); border: 1px solid var(--border); }
   .modal-btn.submit { background: var(--text); color: var(--bg); }
-
-  /* Settings */
-  .settings-note { font-size: 13px; color: var(--text3); line-height: 1.6; margin-bottom: 16px; }
   .conn-status { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-radius: 10px; margin-bottom: 14px; font-size: 13px; font-weight: 600; }
   .conn-status.online { background: var(--green-bg); color: var(--green); }
   .conn-status.offline { background: #451a0355; color: var(--orange); }
   .conn-dot { width: 8px; height: 8px; border-radius: 50%; }
   .conn-status.online .conn-dot { background: var(--green); }
   .conn-status.offline .conn-dot { background: var(--orange); }
+  .settings-note { font-size: 13px; color: var(--text3); line-height: 1.6; margin-bottom: 16px; }
 
-  /* Sync indicator */
-  .sync-bar {
-    position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 200;
-    background: transparent; pointer-events: none;
-  }
+  /* Sync bar */
+  .sync-bar { position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 200; background: transparent; pointer-events: none; }
   .sync-bar.active { background: linear-gradient(90deg, var(--indigo), var(--green), var(--indigo)); background-size: 200% 100%; animation: syncPulse 1.2s ease infinite; }
   @keyframes syncPulse { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
 
   /* Toast */
-  .toast {
-    position: fixed; bottom: calc(var(--safe-bot) + 20px); left: 50%; transform: translateX(-50%);
-    background: var(--surface2); color: var(--text); padding: 10px 20px; border-radius: 10px;
-    font-size: 13px; font-weight: 600; z-index: 300; border: 1px solid var(--border);
-    animation: toastIn 0.3s ease;
-    font-family: var(--mono);
-  }
-  @keyframes toastIn { from { transform: translateX(-50%) translateY(20px); opacity: 0; } to { transform: translateX(-50%) translateY(0); opacity: 1; } }
+  .toast { position: fixed; bottom: calc(var(--safe-bot) + 70px); left: 50%; transform: translateX(-50%); background: var(--surface2); color: var(--text); padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 600; z-index: 300; border: 1px solid var(--border); animation: toastIn 0.3s ease; font-family: var(--mono); }
+  @keyframes toastIn { from { transform: translateX(-50%) translateY(20px); opacity: 0; } }
 
-  /* Pull to refresh hint */
-  .refresh-hint { text-align: center; padding: 12px; font-size: 11px; color: var(--text4); font-family: var(--mono); cursor: pointer; }
-  .refresh-hint:hover { color: var(--text3); }
+  /* ==================== STATS PAGE ==================== */
+  .stats-page-title { font-size: 22px; font-weight: 700; letter-spacing: -0.03em; margin-bottom: 20px; }
+  .stats-section { margin-bottom: 24px; }
+  .stats-section-title { font-size: 11px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 10px; font-family: var(--mono); }
 
-  /* Loading skeleton */
-  .skeleton { background: var(--surface); border-radius: 12px; padding: 18px; margin-bottom: 6px; }
-  .sk-line { height: 12px; background: var(--surface2); border-radius: 6px; margin-bottom: 8px; animation: pulse 1.5s ease infinite; }
-  .sk-line.w60 { width: 60%; }
-  .sk-line.w40 { width: 40%; }
-  .sk-line.w80 { width: 80%; }
-  @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+  /* Stat cards wide */
+  .stat-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+  .stat-card { background: var(--surface); border-radius: 12px; padding: 14px 16px; }
+  .stat-card-val { font-size: 26px; font-weight: 700; font-family: var(--mono); color: var(--text); }
+  .stat-card-label { font-size: 11px; color: var(--text3); margin-top: 2px; font-weight: 600; }
+  .stat-card.highlight { background: var(--green-bg); }
+  .stat-card.highlight .stat-card-val { color: var(--green); }
+  .stat-card.highlight .stat-card-label { color: #86efac; }
+
+  /* Horizontal bar chart */
+  .h-bar-chart { display: flex; flex-direction: column; gap: 8px; }
+  .h-bar-row { display: flex; align-items: center; gap: 10px; }
+  .h-bar-label { width: 60px; font-size: 12px; font-weight: 700; color: var(--text2); font-family: var(--mono); text-align: right; flex-shrink: 0; }
+  .h-bar-track { flex: 1; height: 28px; background: var(--surface); border-radius: 6px; overflow: hidden; position: relative; }
+  .h-bar-fill { height: 100%; border-radius: 6px; transition: width 0.6s ease; display: flex; align-items: center; padding-left: 10px; min-width: 2px; }
+  .h-bar-fill span { font-size: 11px; font-weight: 700; color: rgba(0,0,0,0.7); font-family: var(--mono); white-space: nowrap; }
+  .h-bar-value { font-size: 12px; font-weight: 700; color: var(--text3); font-family: var(--mono); width: 50px; text-align: right; flex-shrink: 0; }
+
+  /* Monthly timeline */
+  .timeline-chart { display: flex; align-items: flex-end; gap: 3px; height: 140px; padding: 0 2px; }
+  .timeline-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; justify-content: flex-end; }
+  .timeline-bar { width: 100%; min-width: 8px; max-width: 40px; border-radius: 4px 4px 0 0; transition: height 0.5s ease; cursor: pointer; position: relative; }
+  .timeline-bar:hover { opacity: 0.8; }
+  .timeline-label { font-size: 9px; color: var(--text4); margin-top: 4px; font-family: var(--mono); text-align: center; }
+  .timeline-val { font-size: 9px; color: var(--text3); margin-bottom: 3px; font-family: var(--mono); font-weight: 600; }
+
+  /* Lifespan list */
+  .lifespan-list { display: flex; flex-direction: column; gap: 6px; }
+  .lifespan-row { background: var(--surface); border-radius: 10px; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
+  .lifespan-info { display: flex; align-items: center; gap: 8px; }
+  .lifespan-kit { font-size: 12px; font-weight: 700; font-family: var(--mono); }
+  .lifespan-chem { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .lifespan-dates { font-size: 11px; color: var(--text4); font-family: var(--mono); }
+  .lifespan-days { font-size: 16px; font-weight: 700; font-family: var(--mono); }
+  .lifespan-days-label { font-size: 10px; color: var(--text4); }
+
+  /* Brand pills */
+  .brand-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .brand-pill { background: var(--surface); border-radius: 999px; padding: 6px 14px; display: flex; align-items: center; gap: 6px; }
+  .brand-pill-name { font-size: 13px; font-weight: 600; color: var(--text2); }
+  .brand-pill-count { font-size: 12px; font-weight: 700; color: var(--text); font-family: var(--mono); background: var(--surface2); border-radius: 999px; padding: 1px 8px; }
+
+  /* Chemistry breakdown table */
+  .chem-table { width: 100%; border-collapse: collapse; }
+  .chem-table th { font-size: 10px; font-weight: 700; color: var(--text4); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--mono); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+  .chem-table td { font-size: 13px; padding: 8px; border-bottom: 1px solid #1c1c1f; color: var(--text2); font-family: var(--mono); }
+  .chem-table tr:last-child td { border-bottom: none; }
+  .chem-table .num { text-align: right; font-weight: 600; color: var(--text); }
 </style>
 </head>
 <body>
 
 <div class="sync-bar" id="syncBar"></div>
 
-<div class="app" id="app">
-  <!-- Header -->
-  <div class="header">
-    <div class="header-row">
-      <div class="logo-area">
-        <img src="./icons/icon-192.png" alt="" class="logo-icon" onerror="this.style.display='none'">
-        <div>
-          <div class="brand">Eternus Film</div>
-          <div class="title">Chemistry Tracker</div>
+<div class="app">
+  <!-- ==================== TRACKER PAGE ==================== -->
+  <div class="page active" id="pageTracker">
+    <div class="header">
+      <div class="header-row">
+        <div class="logo-area">
+          <img src="./icons/icon-192.png" alt="" class="logo-icon" onerror="this.style.display='none'">
+          <div>
+            <div class="brand">Eternus Film</div>
+            <div class="title">Chemistry Tracker</div>
+          </div>
+        </div>
+        <div class="header-actions">
+          <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
+          <button class="icon-btn" onclick="syncFromSheet()" title="Sync now" id="syncBtn">↻</button>
+          <button class="icon-btn primary" onclick="openAddModal()" title="Add batch">+</button>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="icon-btn" onclick="openSettings()" title="Settings">⚙</button>
-        <button class="icon-btn" onclick="syncFromSheet()" title="Sync now" id="syncBtn">↻</button>
-        <button class="icon-btn primary" onclick="openAddModal()" title="Add batch">+</button>
+      <div class="stats">
+        <div class="stat active"><div class="stat-val" id="statActive">—</div><div class="stat-label">Active</div></div>
+        <div class="stat discarded"><div class="stat-val" id="statDiscarded">—</div><div class="stat-label">Discarded</div></div>
+        <div class="stat total"><div class="stat-val" id="statTotal">—</div><div class="stat-label">Total</div></div>
       </div>
     </div>
+    <div class="search-wrap"><span class="search-icon">⌕</span><input class="search" id="searchInput" placeholder="Search chemistry, brand, notes..." oninput="renderCards()"></div>
+    <div class="filters" id="kitFilters"></div>
+    <div class="filter-row"><div class="filters" id="statusFilters"></div><select class="sort-select" id="sortSelect" onchange="renderCards()"><option value="date_desc">Newest first</option><option value="date_asc">Oldest first</option><option value="kit">By kit type</option></select></div>
+    <div class="count" id="resultCount"></div>
+    <div class="cards" id="cardList"></div>
+  </div>
 
-    <!-- Stats -->
-    <div class="stats">
-      <div class="stat active">
-        <div class="stat-val" id="statActive">—</div>
-        <div class="stat-label">Active</div>
-      </div>
-      <div class="stat discarded">
-        <div class="stat-val" id="statDiscarded">—</div>
-        <div class="stat-label">Discarded</div>
-      </div>
-      <div class="stat total">
-        <div class="stat-val" id="statTotal">—</div>
-        <div class="stat-label">Total</div>
-      </div>
+  <!-- ==================== STATS PAGE ==================== -->
+  <div class="page" id="pageStats">
+    <div class="stats-page-title">Analytics</div>
+    
+    <!-- Big numbers -->
+    <div class="stat-cards" id="statCards"></div>
+
+    <!-- Rolls per Kit -->
+    <div class="stats-section">
+      <div class="stats-section-title">Rolls processed per kit</div>
+      <div class="h-bar-chart" id="rollsPerKit"></div>
+    </div>
+
+    <!-- Monthly Timeline -->
+    <div class="stats-section">
+      <div class="stats-section-title">Monthly activity</div>
+      <div class="timeline-chart" id="monthlyChart"></div>
+    </div>
+
+    <!-- Chemistry Breakdown Table -->
+    <div class="stats-section">
+      <div class="stats-section-title">Chemistry usage breakdown</div>
+      <div style="overflow-x:auto"><table class="chem-table" id="chemTable"></table></div>
+    </div>
+
+    <!-- Brand breakdown -->
+    <div class="stats-section">
+      <div class="stats-section-title">Brands used</div>
+      <div class="brand-grid" id="brandGrid"></div>
+    </div>
+
+    <!-- Longest lasting batches -->
+    <div class="stats-section">
+      <div class="stats-section-title">Longest-lasting batches</div>
+      <div class="lifespan-list" id="lifespanList"></div>
+    </div>
+
+    <!-- Shortest lasting (exhausted fast) -->
+    <div class="stats-section">
+      <div class="stats-section-title">Quickest exhausted</div>
+      <div class="lifespan-list" id="shortLifeList"></div>
     </div>
   </div>
-
-  <!-- Search -->
-  <div class="search-wrap">
-    <span class="search-icon">⌕</span>
-    <input class="search" id="searchInput" placeholder="Search chemistry, brand, notes..." oninput="renderCards()">
-  </div>
-
-  <!-- Filters -->
-  <div class="filters" id="kitFilters"></div>
-  <div class="filter-row">
-    <div class="filters" id="statusFilters"></div>
-    <select class="sort-select" id="sortSelect" onchange="renderCards()">
-      <option value="date_desc">Newest first</option>
-      <option value="date_asc">Oldest first</option>
-      <option value="kit">By kit type</option>
-    </select>
-  </div>
-
-  <div class="count" id="resultCount"></div>
-
-  <!-- Cards -->
-  <div class="cards" id="cardList"></div>
 </div>
 
-<!-- Toast container -->
+<!-- Bottom Navigation -->
+<div class="bottom-nav">
+  <button class="nav-btn active" id="navTracker" onclick="switchPage('Tracker')">
+    <span class="nav-icon">◎</span>Tracker
+  </button>
+  <button class="nav-btn" id="navStats" onclick="switchPage('Stats')">
+    <span class="nav-icon">▤</span>Stats
+  </button>
+</div>
+
 <div id="toastContainer"></div>
 
 <script>
@@ -319,428 +295,264 @@ let batches = [];
 let expandedId = null;
 let filterKit = 'All';
 let filterStatus = 'All';
+let currentPage = 'Tracker';
 const STORAGE_KEY = 'eternus_chem_data';
 const API_KEY = 'eternus_api_url';
+
+// ============================
+// PAGE SWITCHING
+// ============================
+function switchPage(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page' + page).classList.add('active');
+  document.getElementById('nav' + page).classList.add('active');
+  if (page === 'Stats') renderStats();
+  window.scrollTo(0, 0);
+}
 
 // ============================
 // HELPERS
 // ============================
 function getApiUrl() { return localStorage.getItem(API_KEY) || ''; }
 function setApiUrl(url) { localStorage.setItem(API_KEY, url); }
+function parseRollCount(s) { if (!s || !s.trim()) return 0; let t=0; s.split(',').forEach(p=>{const m=p.trim().match(/^(\d+)/);if(m)t+=parseInt(m[1]);}); return t; }
+function parseMaxRolls(s) { if (!s||s==='-'||s==='') return null; const m=s.match(/(\d+)/); return m?parseInt(m[1]):null; }
+function parseDateSort(d) { if (!d||d==='-') return 0; const p=d.split('/'); if(p.length===3) return new Date(p[2],p[1]-1,p[0]).getTime(); return 0; }
+function parseDate(d) { if (!d||d==='-') return null; const p=d.split('/'); if(p.length===3) return new Date(p[2],p[1]-1,p[0]); return null; }
+function kitClass(kit) { const k=kit.toLowerCase().replace(/[^a-z0-9]/g,''); if(k.includes('c41'))return'c41';if(k.includes('ecn'))return'ecn2';if(k.includes('e6'))return'e6';return'bw'; }
+function kitColor(kit) { const kc=kitClass(kit); return{c41:'var(--green)',ecn2:'var(--indigo)',e6:'var(--orange)',bw:'var(--gray)'}[kc]||'var(--gray)'; }
 
-function parseRollCount(s) {
-  if (!s || !s.trim()) return 0;
-  let t = 0;
-  s.split(',').forEach(p => { const m = p.trim().match(/^(\d+)/); if (m) t += parseInt(m[1]); });
-  return t;
-}
-function parseMaxRolls(s) {
-  if (!s || s === '-' || s === '') return null;
-  const m = s.match(/(\d+)/);
-  return m ? parseInt(m[1]) : null;
-}
-function parseDateSort(d) {
-  if (!d || d === '-') return 0;
-  const p = d.split('/');
-  if (p.length === 3) return new Date(p[2], p[1]-1, p[0]).getTime();
-  return 0;
-}
-function kitClass(kit) {
-  const k = kit.toLowerCase().replace(/[^a-z0-9]/g, '');
-  if (k.includes('c41')) return 'c41';
-  if (k.includes('ecn')) return 'ecn2';
-  if (k.includes('e6')) return 'e6';
-  return 'bw';
-}
-
-function showToast(msg) {
-  const c = document.getElementById('toastContainer');
-  const t = document.createElement('div');
-  t.className = 'toast';
-  t.textContent = msg;
-  c.appendChild(t);
-  setTimeout(() => t.remove(), 2500);
-}
-
-function setSyncing(on) {
-  document.getElementById('syncBar').className = on ? 'sync-bar active' : 'sync-bar';
-}
+function showToast(msg) { const c=document.getElementById('toastContainer'); const t=document.createElement('div'); t.className='toast'; t.textContent=msg; c.appendChild(t); setTimeout(()=>t.remove(),2500); }
+function setSyncing(on) { document.getElementById('syncBar').className=on?'sync-bar active':'sync-bar'; }
 
 // ============================
 // LOCAL STORAGE
 // ============================
 function saveLocal() { localStorage.setItem(STORAGE_KEY, JSON.stringify(batches)); }
-function loadLocal() {
-  const d = localStorage.getItem(STORAGE_KEY);
-  if (d) { batches = JSON.parse(d); return true; }
-  return false;
-}
+function loadLocal() { const d=localStorage.getItem(STORAGE_KEY); if(d){batches=JSON.parse(d);return true;} return false; }
 
 // ============================
 // GOOGLE SHEETS SYNC
 // ============================
 async function syncFromSheet() {
-  const url = getApiUrl();
-  if (!url) { showToast('Set your Google Script URL in Settings'); return; }
-  
+  const url=getApiUrl(); if(!url){showToast('Set your Google Script URL in Settings');return;}
   setSyncing(true);
   try {
-    const res = await fetch(url + '?action=read');
-    const data = await res.json();
-    if (data.success) {
-      batches = data.data.map((b, i) => ({ ...b, id: b.row || (i + 1) }));
-      saveLocal();
-      renderAll();
-      showToast('Synced ' + batches.length + ' batches');
-    } else {
-      showToast('Sync error: ' + (data.error || 'Unknown'));
-    }
-  } catch (e) {
-    showToast('Connection failed — using cached data');
-    console.error(e);
-  }
+    const res=await fetch(url+'?action=read'); const data=await res.json();
+    if(data.success){batches=data.data.map((b,i)=>({...b,id:b.row||(i+1)}));saveLocal();renderAll();showToast('Synced '+batches.length+' batches');}
+    else showToast('Sync error: '+(data.error||'Unknown'));
+  } catch(e){showToast('Connection failed — using cached data');console.error(e);}
   setSyncing(false);
 }
-
-async function pushToSheet(action, payload) {
-  const url = getApiUrl();
-  if (!url) return false;
-  
-  setSyncing(true);
-  try {
-    const opts = action === 'read' ? {} : {
-      method: 'POST',
-      headers: { 'Content-Type': 'text/plain' },
-      body: JSON.stringify(payload)
-    };
-    const res = await fetch(url + '?action=' + action, opts);
-    const data = await res.json();
-    setSyncing(false);
-    return data.success;
-  } catch (e) {
-    console.error(e);
-    setSyncing(false);
-    return false;
-  }
+async function pushToSheet(action,payload) {
+  const url=getApiUrl(); if(!url)return false; setSyncing(true);
+  try { const opts=action==='read'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)}; const res=await fetch(url+'?action='+action,opts); const data=await res.json(); setSyncing(false); return data.success; }
+  catch(e){console.error(e);setSyncing(false);return false;}
 }
 
 // ============================
-// CRUD OPERATIONS
+// CRUD
 // ============================
 async function addBatch(batch) {
-  batch.id = Date.now();
-  batches.push(batch);
-  saveLocal();
-  renderAll();
-  
-  const synced = await pushToSheet('add', batch);
-  if (synced) {
-    showToast('Added & synced to Sheet');
-    syncFromSheet(); // refresh to get row numbers
-  } else if (getApiUrl()) {
-    showToast('Added locally — sync pending');
-  } else {
-    showToast('Added (offline)');
-  }
+  batch.id=Date.now();batches.push(batch);saveLocal();renderAll();
+  const synced=await pushToSheet('add',batch);
+  if(synced){showToast('Added & synced to Sheet');syncFromSheet();}
+  else if(getApiUrl())showToast('Added locally — sync pending');
+  else showToast('Added (offline)');
 }
-
-async function updateBatchStatus(id, newStatus) {
-  const b = batches.find(x => x.id === id);
-  if (!b) return;
-  b.status = newStatus;
-  saveLocal();
-  renderAll();
-  
-  if (b.row) {
-    const synced = await pushToSheet('update', b);
-    if (synced) showToast('Updated in Sheet');
-  }
+async function updateBatchStatus(id,newStatus) {
+  const b=batches.find(x=>x.id===id);if(!b)return; b.status=newStatus;saveLocal();renderAll();
+  if(b.row){const synced=await pushToSheet('update',b);if(synced)showToast('Updated in Sheet');}
 }
-
-async function addRollsToBatch(id, newRolls) {
-  const b = batches.find(x => x.id === id);
-  if (!b) return;
-  b.rolls = b.rolls ? b.rolls + ', ' + newRolls : newRolls;
-  saveLocal();
-  renderAll();
-  
-  if (b.row) {
-    const synced = await pushToSheet('update', b);
-    if (synced) showToast('Roll log updated in Sheet');
-  }
+async function addRollsToBatch(id,newRolls) {
+  const b=batches.find(x=>x.id===id);if(!b)return; b.rolls=b.rolls?b.rolls+', '+newRolls:newRolls;saveLocal();renderAll();
+  if(b.row){const synced=await pushToSheet('update',b);if(synced)showToast('Roll log updated in Sheet');}
 }
 
 // ============================
-// RENDERING
+// RENDER TRACKER
 // ============================
-function renderAll() {
-  renderStats();
-  renderFilters();
-  renderCards();
-}
+function renderAll() { renderTrackerStats(); renderFilters(); renderCards(); if(currentPage==='Stats')renderStats(); }
 
-function renderStats() {
-  const active = batches.filter(b => b.status === 'Fresh').length;
-  const disc = batches.filter(b => b.status === 'Discarded').length;
-  document.getElementById('statActive').textContent = active;
-  document.getElementById('statDiscarded').textContent = disc;
-  document.getElementById('statTotal').textContent = batches.length;
+function renderTrackerStats() {
+  const a=batches.filter(b=>b.status==='Fresh').length;
+  const d=batches.filter(b=>b.status==='Discarded').length;
+  document.getElementById('statActive').textContent=a;
+  document.getElementById('statDiscarded').textContent=d;
+  document.getElementById('statTotal').textContent=batches.length;
 }
-
 function renderFilters() {
-  const kits = ['All', 'C41', 'ECN-2', 'E6', 'B&W'];
-  document.getElementById('kitFilters').innerHTML = kits.map(k =>
-    `<button class="pill ${filterKit===k?'active':''}" onclick="filterKit='${k}';renderFilters();renderCards()">${k}</button>`
-  ).join('');
-  
-  const statuses = ['All', 'Active', 'Discarded'];
-  document.getElementById('statusFilters').innerHTML = statuses.map(s =>
-    `<button class="pill ${filterStatus===s?'active':''}" onclick="filterStatus='${s}';renderFilters();renderCards()">${s}</button>`
-  ).join('');
+  const kits=['All','C41','ECN-2','E6','B&W'];
+  document.getElementById('kitFilters').innerHTML=kits.map(k=>`<button class="pill ${filterKit===k?'active':''}" onclick="filterKit='${k}';renderFilters();renderCards()">${k}</button>`).join('');
+  const sts=['All','Active','Discarded'];
+  document.getElementById('statusFilters').innerHTML=sts.map(s=>`<button class="pill ${filterStatus===s?'active':''}" onclick="filterStatus='${s}';renderFilters();renderCards()">${s}</button>`).join('');
 }
-
 function renderCards() {
-  const q = document.getElementById('searchInput').value.toLowerCase();
-  const sort = document.getElementById('sortSelect').value;
-  
-  let list = batches.filter(b => {
-    if (filterKit !== 'All' && b.kit !== filterKit) return false;
-    if (filterStatus === 'Active' && b.status !== 'Fresh') return false;
-    if (filterStatus === 'Discarded' && b.status !== 'Discarded') return false;
-    if (q) return (b.chem + b.notes + b.kit + b.rolls + b.extra).toLowerCase().includes(q);
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  const sort=document.getElementById('sortSelect').value;
+  let list=batches.filter(b=>{
+    if(filterKit!=='All'&&b.kit!==filterKit)return false;
+    if(filterStatus==='Active'&&b.status!=='Fresh')return false;
+    if(filterStatus==='Discarded'&&b.status!=='Discarded')return false;
+    if(q)return(b.chem+b.notes+b.kit+b.rolls+b.extra).toLowerCase().includes(q);
     return true;
   });
-  
-  list.sort((a, b) => {
-    if (sort === 'date_desc') return parseDateSort(b.mixDate) - parseDateSort(a.mixDate);
-    if (sort === 'date_asc') return parseDateSort(a.mixDate) - parseDateSort(b.mixDate);
-    if (sort === 'kit') return a.kit.localeCompare(b.kit);
-    return 0;
+  list.sort((a,b)=>{if(sort==='date_desc')return parseDateSort(b.mixDate)-parseDateSort(a.mixDate);if(sort==='date_asc')return parseDateSort(a.mixDate)-parseDateSort(b.mixDate);if(sort==='kit')return a.kit.localeCompare(b.kit);return 0;});
+  document.getElementById('resultCount').textContent=list.length+' batch'+(list.length!==1?'es':'');
+  if(!list.length){document.getElementById('cardList').innerHTML='<div class="empty"><div style="font-size:32px;opacity:0.3;margin-bottom:8px">~</div><div style="font-size:14px">No batches match</div></div>';return;}
+  document.getElementById('cardList').innerHTML=list.map(b=>{
+    const kc=kitClass(b.kit); const used=parseRollCount(b.rolls); const max=parseMaxRolls(b.maxRolls);
+    const pct=max?Math.min((used/max)*100,100):0; const isOver=max&&used>max; const isExp=expandedId===b.id; const isFresh=b.status==='Fresh';
+    let prog='';
+    if(max)prog=`<div class="progress-wrap"><div class="progress-bar"><div class="progress-fill ${isOver?'over':kc}" style="width:${pct}%"></div></div><span class="progress-text" ${isOver?'style="color:var(--red)"':''}>${used}/${max}</span></div>`;
+    else prog=used>0?`<span class="progress-text">${used} rolls</span>`:'<span class="no-limit">no limit set</span>';
+    let det='';
+    if(isExp){
+      const chips=b.rolls?b.rolls.split(',').map(r=>`<span class="roll-chip">${r.trim()}</span>`).join(''):'<span class="roll-chip" style="color:var(--text4)">no rolls logged</span>';
+      det=`<div class="card-detail"><div class="detail-label">Roll Log</div><div class="roll-chips">${chips}</div>${b.extra?`<div class="detail-label">Notes</div><div class="detail-note">${b.extra}</div>`:''}<div class="card-actions"><button class="action-btn ${isFresh?'discard':'activate'}" onclick="event.stopPropagation();updateBatchStatus(${b.id},'${isFresh?'Discarded':'Fresh'}')">${isFresh?'DISCARD':'REACTIVATE'}</button><button class="action-btn add-rolls" onclick="event.stopPropagation();openAddRollsModal(${b.id})">+ ADD ROLLS</button></div></div>`;
+    }
+    return `<div class="card kit-${kc}" onclick="expandedId=expandedId===${b.id}?null:${b.id};renderCards()"><div class="card-top"><div class="card-main"><div class="card-tags"><span class="chem-name">${b.chem}</span><span class="badge ${kc}">${b.kit}</span><span class="badge ${isFresh?'fresh':'discarded'}">${isFresh?'ACTIVE':'USED'}</span></div><div class="card-meta"><span>${b.notes}</span><span>${b.mixDate}</span></div>${prog}</div></div>${det}</div>`;
+  }).join('');
+}
+
+// ============================
+// RENDER STATS PAGE
+// ============================
+function renderStats() {
+  if(!batches.length) return;
+
+  // --- Big number cards ---
+  const totalRolls = batches.reduce((s,b)=>s+parseRollCount(b.rolls),0);
+  const freshCount = batches.filter(b=>b.status==='Fresh').length;
+  const uniqueChems = [...new Set(batches.map(b=>b.chem))].length;
+  const dates = batches.map(b=>parseDateSort(b.mixDate)).filter(d=>d>0);
+  const firstDate = dates.length ? new Date(Math.min(...dates)) : null;
+  const daysSince = firstDate ? Math.floor((Date.now()-firstDate.getTime())/(1000*60*60*24)) : 0;
+
+  document.getElementById('statCards').innerHTML=`
+    <div class="stat-card highlight"><div class="stat-card-val">${totalRolls}</div><div class="stat-card-label">Total rolls processed</div></div>
+    <div class="stat-card"><div class="stat-card-val">${batches.length}</div><div class="stat-card-label">Total batches mixed</div></div>
+    <div class="stat-card"><div class="stat-card-val">${freshCount}</div><div class="stat-card-label">Active batches now</div></div>
+    <div class="stat-card"><div class="stat-card-val">${daysSince}</div><div class="stat-card-label">Days since first mix</div></div>
+    <div class="stat-card"><div class="stat-card-val">${uniqueChems}</div><div class="stat-card-label">Chemistry types used</div></div>
+    <div class="stat-card"><div class="stat-card-val">${totalRolls&&daysSince?(totalRolls/Math.max(daysSince/30,1)).toFixed(1):'—'}</div><div class="stat-card-label">Avg rolls / month</div></div>
+  `;
+
+  // --- Rolls per kit ---
+  const kitRolls = {};
+  batches.forEach(b => { kitRolls[b.kit] = (kitRolls[b.kit]||0) + parseRollCount(b.rolls); });
+  const maxKit = Math.max(...Object.values(kitRolls), 1);
+  const kitOrder = ['C41','ECN-2','E6','B&W'].filter(k=>kitRolls[k]);
+  document.getElementById('rollsPerKit').innerHTML = kitOrder.map(k => {
+    const v=kitRolls[k]||0; const pct=Math.max((v/maxKit)*100,2);
+    const col = kitColor(k);
+    return `<div class="h-bar-row"><div class="h-bar-label">${k}</div><div class="h-bar-track"><div class="h-bar-fill" style="width:${pct}%;background:${col}"><span>${v}</span></div></div><div class="h-bar-value">${v} rolls</div></div>`;
+  }).join('');
+
+  // --- Monthly timeline ---
+  const monthly = {};
+  batches.forEach(b => {
+    const d = parseDate(b.mixDate); if(!d) return;
+    const key = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    monthly[key] = (monthly[key]||0) + parseRollCount(b.rolls);
+  });
+  const monthKeys = Object.keys(monthly).sort();
+  const maxMonth = Math.max(...Object.values(monthly), 1);
+  const monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  document.getElementById('monthlyChart').innerHTML = monthKeys.map(k => {
+    const v = monthly[k]; const pct = Math.max((v/maxMonth)*100, 4);
+    const [y,m] = k.split('-');
+    return `<div class="timeline-bar-wrap"><div class="timeline-val">${v}</div><div class="timeline-bar" style="height:${pct}%;background:var(--indigo)" title="${monthNames[parseInt(m)-1]} ${y}: ${v} rolls"></div><div class="timeline-label">${monthNames[parseInt(m)-1]}<br>${y.slice(2)}</div></div>`;
+  }).join('');
+
+  // --- Chemistry breakdown table ---
+  const chemData = {};
+  batches.forEach(b => {
+    const key = b.kit + ' › ' + b.chem;
+    if(!chemData[key]) chemData[key] = { kit: b.kit, chem: b.chem, count: 0, rolls: 0 };
+    chemData[key].count++;
+    chemData[key].rolls += parseRollCount(b.rolls);
+  });
+  const chemRows = Object.values(chemData).sort((a,b) => b.rolls - a.rolls);
+  document.getElementById('chemTable').innerHTML = `
+    <thead><tr><th>Kit</th><th>Chemistry</th><th style="text-align:right">Batches</th><th style="text-align:right">Rolls</th></tr></thead>
+    <tbody>${chemRows.map(r=>`<tr><td><span class="badge ${kitClass(r.kit)}">${r.kit}</span></td><td>${r.chem}</td><td class="num">${r.count}</td><td class="num">${r.rolls}</td></tr>`).join('')}</tbody>`;
+
+  // --- Brand breakdown ---
+  const brands = {};
+  batches.forEach(b => {
+    const n = b.notes.trim().toLowerCase().replace(/\s+/g,' ');
+    if(!n) return;
+    const display = b.notes.trim().split(/\s+/).slice(0,3).join(' ');
+    const key = n.split(/\s+/).slice(0,2).join(' ');
+    if(!brands[key]) brands[key] = { name: display, count: 0 };
+    brands[key].count++;
+  });
+  const brandArr = Object.values(brands).sort((a,b)=>b.count-a.count);
+  document.getElementById('brandGrid').innerHTML = brandArr.slice(0,15).map(br=>
+    `<div class="brand-pill"><span class="brand-pill-name">${br.name}</span><span class="brand-pill-count">${br.count}</span></div>`
+  ).join('');
+
+  // --- Lifespan (longest lasting) ---
+  const lifespans = [];
+  batches.forEach(b => {
+    if(b.status !== 'Discarded') return;
+    const mixD = parseDate(b.mixDate); if(!mixD) return;
+    const rollParts = (b.rolls||'').split(',').map(r=>r.trim()).filter(r=>r);
+    if(rollParts.length < 2) return;
+    // Find the last date mentioned
+    let lastDate = mixD;
+    rollParts.forEach(r => {
+      const dm = r.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);
+      if(dm) {
+        let yr = parseInt(dm[3]); if(yr<100) yr+=2000;
+        const d = new Date(yr, parseInt(dm[2])-1, parseInt(dm[1]));
+        if(d > lastDate) lastDate = d;
+      }
+    });
+    const days = Math.floor((lastDate - mixD)/(1000*60*60*24));
+    if(days > 0) lifespans.push({ ...b, days, startDate: mixD, endDate: lastDate });
   });
 
-  document.getElementById('resultCount').textContent = list.length + ' batch' + (list.length !== 1 ? 'es' : '');
-  
-  if (list.length === 0) {
-    document.getElementById('cardList').innerHTML = `<div class="empty"><div class="empty-icon">~</div><div class="empty-text">No batches match your filters</div></div>`;
-    return;
-  }
+  lifespans.sort((a,b) => b.days - a.days);
+  document.getElementById('lifespanList').innerHTML = lifespans.slice(0,8).map(l => {
+    const kc = kitClass(l.kit);
+    return `<div class="lifespan-row"><div><div class="lifespan-info"><span class="badge ${kc}">${l.kit}</span><span class="lifespan-chem">${l.chem}</span></div><div class="lifespan-dates">${l.mixDate} → ${l.endDate.toLocaleDateString('en-GB')}</div></div><div style="text-align:right"><div class="lifespan-days">${l.days}</div><div class="lifespan-days-label">days</div></div></div>`;
+  }).join('') || '<div style="color:var(--text4);font-size:13px;padding:12px">Not enough data yet</div>';
 
-  document.getElementById('cardList').innerHTML = list.map(b => {
-    const kc = kitClass(b.kit);
-    const used = parseRollCount(b.rolls);
-    const max = parseMaxRolls(b.maxRolls);
-    const pct = max ? Math.min((used/max)*100, 100) : 0;
-    const isOver = max && used > max;
-    const isExpanded = expandedId === b.id;
-    const isFresh = b.status === 'Fresh';
-    
-    let progressHtml = '';
-    if (max) {
-      progressHtml = `
-        <div class="progress-wrap">
-          <div class="progress-bar"><div class="progress-fill ${isOver?'over':kc}" style="width:${pct}%"></div></div>
-          <span class="progress-text" ${isOver?'style="color:var(--red)"':''}>${used}/${max}</span>
-        </div>`;
-    } else {
-      progressHtml = used > 0 ? `<span class="progress-text">${used} rolls</span>` : `<span class="no-limit">no limit set</span>`;
-    }
-
-    let detailHtml = '';
-    if (isExpanded) {
-      const rollChips = b.rolls ? b.rolls.split(',').map(r => `<span class="roll-chip">${r.trim()}</span>`).join('') : '<span class="roll-chip" style="color:var(--text4)">no rolls logged</span>';
-      detailHtml = `
-        <div class="card-detail">
-          <div class="detail-label">Roll Log</div>
-          <div class="roll-chips">${rollChips}</div>
-          ${b.extra ? `<div class="detail-label">Notes</div><div class="detail-note">${b.extra}</div>` : ''}
-          <div class="card-actions">
-            <button class="action-btn ${isFresh?'discard':'activate'}" onclick="event.stopPropagation();updateBatchStatus(${b.id},'${isFresh?'Discarded':'Fresh'}')">${isFresh?'DISCARD':'REACTIVATE'}</button>
-            <button class="action-btn add-rolls" onclick="event.stopPropagation();openAddRollsModal(${b.id})">+ ADD ROLLS</button>
-          </div>
-        </div>`;
-    }
-
-    return `
-      <div class="card kit-${kc}" onclick="expandedId=expandedId===${b.id}?null:${b.id};renderCards()">
-        <div class="card-top">
-          <div class="card-main">
-            <div class="card-tags">
-              <span class="chem-name">${b.chem}</span>
-              <span class="badge ${kc}">${b.kit}</span>
-              <span class="badge ${isFresh?'fresh':'discarded'}">${isFresh?'ACTIVE':'USED'}</span>
-            </div>
-            <div class="card-meta"><span>${b.notes}</span><span>${b.mixDate}</span></div>
-            ${progressHtml}
-          </div>
-        </div>
-        ${detailHtml}
-      </div>`;
-  }).join('');
+  // --- Shortest lifespan (exhausted fastest) ---
+  const short = lifespans.filter(l=>l.days>=0).sort((a,b)=>a.days-b.days);
+  document.getElementById('shortLifeList').innerHTML = short.slice(0,5).map(l => {
+    const kc = kitClass(l.kit);
+    return `<div class="lifespan-row"><div><div class="lifespan-info"><span class="badge ${kc}">${l.kit}</span><span class="lifespan-chem">${l.chem}</span></div><div class="lifespan-dates">${l.mixDate} • ${l.notes}</div></div><div style="text-align:right"><div class="lifespan-days" style="color:var(--orange)">${l.days}</div><div class="lifespan-days-label">days</div></div></div>`;
+  }).join('') || '<div style="color:var(--text4);font-size:13px;padding:12px">Not enough data yet</div>';
 }
 
 // ============================
 // MODALS
 // ============================
 function openAddModal() {
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal">
-      <h2>New Batch</h2>
-      <div class="form-grid">
-        <div class="form-group">
-          <label class="form-label">Kit</label>
-          <select class="form-input" id="addKit">
-            <option>C41</option><option>ECN-2</option><option>E6</option><option>B&W</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Chemistry</label>
-          <select class="form-input" id="addChem">
-            <option>Pre-Bath</option><option>Developer</option><option>First Dev</option>
-            <option>Color Dev</option><option>Stop</option><option>Bleach</option>
-            <option>Fixer</option><option>Stabiliser</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Mix Date</label>
-          <input class="form-input" id="addDate" placeholder="DD/MM/YYYY" value="${new Date().toLocaleDateString('en-GB')}">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Max Rolls</label>
-          <input class="form-input" id="addMax" placeholder="e.g. 10">
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Brand / Notes</label>
-          <input class="form-input" id="addNotes" placeholder="e.g. Photon, Kodak, DIY...">
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Roll Log</label>
-          <textarea class="form-input" id="addRolls" placeholder="e.g. 5 on 25.03.26, 3 on 27.03.26"></textarea>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Additional Notes</label>
-          <input class="form-input" id="addExtra" placeholder="Optional">
-        </div>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-        <button class="modal-btn submit" onclick="submitAdd(this)">Add Batch</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  // Auto-set default chemistry
-  document.getElementById('addChem').value = 'Developer';
+  const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove();};
+  ov.innerHTML=`<div class="modal"><h2>New Batch</h2><div class="form-grid"><div class="form-group"><label class="form-label">Kit</label><select class="form-input" id="addKit"><option>C41</option><option>ECN-2</option><option>E6</option><option>B&W</option></select></div><div class="form-group"><label class="form-label">Chemistry</label><select class="form-input" id="addChem"><option>Pre-Bath</option><option>Developer</option><option>First Dev</option><option>Color Dev</option><option>Stop</option><option>Bleach</option><option>Fixer</option><option>Stabiliser</option></select></div><div class="form-group"><label class="form-label">Mix Date</label><input class="form-input" id="addDate" placeholder="DD/MM/YYYY" value="${new Date().toLocaleDateString('en-GB')}"></div><div class="form-group"><label class="form-label">Max Rolls</label><input class="form-input" id="addMax" placeholder="e.g. 10"></div><div class="form-group full"><label class="form-label">Brand / Notes</label><input class="form-input" id="addNotes" placeholder="e.g. Photon, Kodak, DIY..."></div><div class="form-group full"><label class="form-label">Roll Log</label><textarea class="form-input" id="addRolls" placeholder="e.g. 5 on 25.03.26, 3 on 27.03.26"></textarea></div><div class="form-group full"><label class="form-label">Additional Notes</label><input class="form-input" id="addExtra" placeholder="Optional"></div></div><div class="modal-actions"><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn submit" onclick="submitAdd(this)">Add Batch</button></div></div>`;
+  document.body.appendChild(ov);document.getElementById('addChem').value='Developer';
 }
+function submitAdd(btn){const b={kit:document.getElementById('addKit').value,chem:document.getElementById('addChem').value,mixDate:document.getElementById('addDate').value,maxRolls:document.getElementById('addMax').value,notes:document.getElementById('addNotes').value,status:'Fresh',rolls:document.getElementById('addRolls').value,extra:document.getElementById('addExtra').value};if(!b.mixDate){showToast('Mix date is required');return;}btn.closest('.modal-overlay').remove();addBatch(b);}
 
-function submitAdd(btn) {
-  const batch = {
-    kit: document.getElementById('addKit').value,
-    chem: document.getElementById('addChem').value,
-    mixDate: document.getElementById('addDate').value,
-    maxRolls: document.getElementById('addMax').value,
-    notes: document.getElementById('addNotes').value,
-    status: 'Fresh',
-    rolls: document.getElementById('addRolls').value,
-    extra: document.getElementById('addExtra').value,
-  };
-  if (!batch.mixDate) { showToast('Mix date is required'); return; }
-  btn.closest('.modal-overlay').remove();
-  addBatch(batch);
-}
+function openAddRollsModal(batchId){const b=batches.find(x=>x.id===batchId);if(!b)return;const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove();};ov.innerHTML=`<div class="modal"><h2>Add Rolls — ${b.kit} ${b.chem}</h2><div class="form-group"><label class="form-label">New Roll Entry</label><input class="form-input" id="newRollsInput" placeholder="e.g. 4 on ${new Date().toLocaleDateString('en-GB').replace(/\//g,'.')}"></div><div class="modal-actions"><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn submit" onclick="const v=document.getElementById('newRollsInput').value.trim();if(v){addRollsToBatch(${batchId},v);this.closest('.modal-overlay').remove();}">Add</button></div></div>`;document.body.appendChild(ov);setTimeout(()=>document.getElementById('newRollsInput').focus(),100);}
 
-function openAddRollsModal(batchId) {
-  const b = batches.find(x => x.id === batchId);
-  if (!b) return;
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal">
-      <h2>Add Rolls — ${b.kit} ${b.chem}</h2>
-      <div class="form-group">
-        <label class="form-label">New Roll Entry</label>
-        <input class="form-input" id="newRollsInput" placeholder="e.g. 4 on ${new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}" autofocus>
-      </div>
-      <div class="modal-actions">
-        <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-        <button class="modal-btn submit" onclick="
-          const v=document.getElementById('newRollsInput').value.trim();
-          if(v){addRollsToBatch(${batchId},v);this.closest('.modal-overlay').remove();}
-        ">Add</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-  setTimeout(() => document.getElementById('newRollsInput').focus(), 100);
-}
-
-function openSettings() {
-  const currentUrl = getApiUrl();
-  const connected = !!currentUrl;
-  const overlay = document.createElement('div');
-  overlay.className = 'modal-overlay';
-  overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
-  overlay.innerHTML = `
-    <div class="modal">
-      <h2>Settings</h2>
-      
-      <div class="conn-status ${connected?'online':'offline'}">
-        <div class="conn-dot"></div>
-        ${connected ? 'Connected to Google Sheet' : 'Not connected — data is local only'}
-      </div>
-      
-      <div class="settings-note">
-        Paste your Google Apps Script URL below to sync with your Sheet. See the <strong>SETUP.md</strong> file for instructions on how to get this URL.
-      </div>
-      
-      <div class="form-group" style="margin-bottom:14px">
-        <label class="form-label">Google Apps Script URL</label>
-        <input class="form-input" id="settingsUrl" value="${currentUrl}" placeholder="https://script.google.com/macros/s/...">
-      </div>
-      
-      <div class="modal-actions" style="flex-direction:column;gap:8px">
-        <button class="modal-btn submit" onclick="
-          setApiUrl(document.getElementById('settingsUrl').value.trim());
-          this.closest('.modal-overlay').remove();
-          showToast('Settings saved');
-          if(getApiUrl()) syncFromSheet();
-        ">Save & Sync</button>
-        <button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button>
-        <button class="modal-btn cancel" style="color:var(--red);border-color:#7f1d1d44;margin-top:8px" onclick="
-          if(confirm('Clear all local data and re-sync from Sheet?')){
-            localStorage.removeItem('${STORAGE_KEY}');
-            batches=[];renderAll();
-            this.closest('.modal-overlay').remove();
-            syncFromSheet();
-          }
-        ">Reset Local Data</button>
-      </div>
-    </div>`;
-  document.body.appendChild(overlay);
-}
+function openSettings(){const u=getApiUrl();const c=!!u;const ov=document.createElement('div');ov.className='modal-overlay';ov.onclick=e=>{if(e.target===ov)ov.remove();};ov.innerHTML=`<div class="modal"><h2>Settings</h2><div class="conn-status ${c?'online':'offline'}"><div class="conn-dot"></div>${c?'Connected to Google Sheet':'Not connected — data is local only'}</div><div class="settings-note">Paste your Google Apps Script Web App URL below to sync with your Sheet.</div><div class="form-group" style="margin-bottom:14px"><label class="form-label">Google Apps Script URL</label><input class="form-input" id="settingsUrl" value="${u}" placeholder="https://script.google.com/macros/s/..."></div><div class="modal-actions" style="flex-direction:column;gap:8px"><button class="modal-btn submit" onclick="setApiUrl(document.getElementById('settingsUrl').value.trim());this.closest('.modal-overlay').remove();showToast('Settings saved');if(getApiUrl())syncFromSheet();">Save & Sync</button><button class="modal-btn cancel" onclick="this.closest('.modal-overlay').remove()">Cancel</button><button class="modal-btn cancel" style="color:var(--red);border-color:#7f1d1d44;margin-top:8px" onclick="if(confirm('Clear all local data and re-sync from Sheet?')){localStorage.removeItem('${STORAGE_KEY}');batches=[];renderAll();this.closest('.modal-overlay').remove();syncFromSheet();}">Reset Local Data</button></div></div>`;document.body.appendChild(ov);}
 
 // ============================
 // INIT
 // ============================
-function init() {
-  // Register service worker
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW:', e));
-  }
-  
-  // Load cached data
-  const hasLocal = loadLocal();
-  renderAll();
-  
-  // Auto-sync if connected
-  if (getApiUrl()) {
-    syncFromSheet();
-  } else if (!hasLocal) {
-    showToast('Tap ⚙ to connect your Google Sheet');
-  }
+function init(){
+  if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(e=>console.log('SW:',e));
+  const hasLocal=loadLocal(); renderAll();
+  if(getApiUrl()) syncFromSheet();
+  else if(!hasLocal) showToast('Tap ⚙ to connect your Google Sheet');
 }
-
 init();
 </script>
 </body>
