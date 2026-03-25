@@ -169,114 +169,281 @@ function parseDateForSort(d) {
   return 0;
 }
 
+function getLastUsedDate(rollStr) {
+  if (!rollStr || rollStr.trim() === "") return null;
+  const datePattern = /(\d{2})\.(\d{2})\.(\d{2,4})/g;
+  let lastDate = null;
+  let match;
+  while ((match = datePattern.exec(rollStr)) !== null) {
+    const day = match[1], month = match[2];
+    let year = match[3];
+    if (year.length === 2) year = "20" + year;
+    const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    if (!isNaN(d.getTime()) && (!lastDate || d > lastDate)) lastDate = d;
+  }
+  return lastDate;
+}
+
+function formatDate(d) {
+  if (!d) return null;
+  return String(d.getDate()).padStart(2, "0") + "/" +
+         String(d.getMonth() + 1).padStart(2, "0") + "/" +
+         d.getFullYear();
+}
+
+function todayAsLogDate() {
+  const today = new Date();
+  return String(today.getDate()).padStart(2, "0") + "." +
+         String(today.getMonth() + 1).padStart(2, "0") + "." +
+         String(today.getFullYear()).slice(2);
+}
+
+const pillStyle = (active) => ({
+  padding: "5px 12px", borderRadius: 999, border: "none", cursor: "pointer",
+  fontSize: 11, fontWeight: 700, letterSpacing: "0.06em",
+  background: active ? "#fafafa" : "#27272a",
+  color: active ? "#09090b" : "#71717a",
+  transition: "all 0.15s ease",
+  whiteSpace: "nowrap",
+  fontFamily: "'JetBrains Mono', monospace",
+});
+
+function StatCard({ value, label, valueColor, bg }) {
+  return (
+    <div style={{ background: bg, borderRadius: 10, padding: "14px 16px", border: "1px solid #27272a" }}>
+      <div style={{ fontSize: 26, fontWeight: 700, color: valueColor, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1 }}>{value}</div>
+      <div style={{ fontSize: 10, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.12em", marginTop: 4 }}>{label}</div>
+    </div>
+  );
+}
+
 function Badge({ children, color, bg }) {
   return (
     <span style={{
-      display: "inline-block", padding: "2px 10px", borderRadius: "999px",
-      fontSize: "11px", fontWeight: 700, letterSpacing: "0.05em",
+      display: "inline-block", padding: "2px 8px", borderRadius: "4px",
+      fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em",
       color: color, background: bg, textTransform: "uppercase",
     }}>{children}</span>
   );
 }
 
 function ProgressBar({ used, max, accent }) {
-  if (!max) return <span style={{ color: "#666", fontSize: 12, fontStyle: "italic" }}>no limit</span>;
+  if (!max) return <span style={{ color: "#52525b", fontSize: 11, fontStyle: "italic" }}>no limit</span>;
   const pct = Math.min((used / max) * 100, 100);
   const isOver = used > max;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <div style={{ flex: 1, height: 6, borderRadius: 3, background: "#27272a", overflow: "hidden" }}>
+      <div style={{ flex: 1, height: 5, borderRadius: 3, background: "#27272a", overflow: "hidden" }}>
         <div style={{
-          width: `${pct}%`, height: "100%", borderRadius: 3,
+          width: pct + "%", height: "100%", borderRadius: 3,
           background: isOver ? "#ef4444" : accent,
           transition: "width 0.4s ease",
         }} />
       </div>
-      <span style={{ fontSize: 12, color: isOver ? "#ef4444" : "#a1a1aa", fontWeight: 600, minWidth: 45, textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-        {used}/{max}
-      </span>
+      <span style={{
+        fontSize: 11, color: isOver ? "#ef4444" : "#a1a1aa",
+        fontWeight: 700, minWidth: 40, textAlign: "right",
+        fontFamily: "'JetBrains Mono', monospace",
+      }}>{used}/{max}</span>
     </div>
   );
 }
 
-function ChemCard({ item, colors, onToggle, expanded, onStatusToggle, onEdit, onDelete }) {
+function HorizontalBar({ label, value, maxValue, color, labelColor }) {
+  const pct = maxValue > 0 ? Math.min((value / maxValue) * 100, 100) : 0;
+  return (
+    <div style={{ marginBottom: 12 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+        <span style={{ fontSize: 12, color: labelColor || "#d4d4d8", fontWeight: 600 }}>{label}</span>
+        <span style={{ fontSize: 12, color: "#71717a", fontFamily: "'JetBrains Mono', monospace", fontWeight: 700 }}>{value}</span>
+      </div>
+      <div style={{ height: 8, background: "#27272a", borderRadius: 4, overflow: "hidden" }}>
+        <div style={{ width: pct + "%", height: "100%", background: color, borderRadius: 4, transition: "width 0.6s ease" }} />
+      </div>
+    </div>
+  );
+}
+
+function ChemCard({ item, colors, onDiscard, onReactivate, onEdit, onDelete, onLogRolls }) {
+  const [expanded, setExpanded] = useState(false);
   const used = parseRollCount(item.rolls);
   const max = parseMaxRolls(item.maxRolls);
   const isFresh = item.status === "Fresh";
-
-  const actionBtnStyle = (color, borderColor) => ({
-    flex: 1, padding: "7px 0", borderRadius: 7, border: `1px solid ${borderColor}`,
-    background: "transparent", color: color, cursor: "pointer", fontSize: 11,
-    fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.04em",
-  });
+  const lastUsed = getLastUsedDate(item.rolls);
+  const lastUsedStr = formatDate(lastUsed);
+  const dateRange = lastUsedStr && lastUsedStr !== item.mixDate
+    ? item.mixDate + " — " + lastUsedStr
+    : item.mixDate;
 
   return (
-    <div
-      onClick={onToggle}
-      style={{
-        background: "#18181b",
-        borderRadius: 12,
-        padding: "14px 16px",
-        cursor: "pointer",
-        borderLeft: `3px solid ${colors.accent}`,
-        transition: "all 0.2s ease",
-        position: "relative",
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = "#1f1f23"}
-      onMouseLeave={e => e.currentTarget.style.background = "#18181b"}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 4 }}>
-            <span style={{ fontWeight: 700, color: "#fafafa", fontSize: 15, fontFamily: "'JetBrains Mono', monospace" }}>{item.chem}</span>
-            <Badge color={colors.text} bg={colors.badge}>{item.kit}</Badge>
-            {isFresh && <Badge color="#22c55e" bg="#052e16">ACTIVE</Badge>}
-            {!isFresh && <Badge color="#71717a" bg="#27272a">USED</Badge>}
+    <div style={{
+      background: "#18181b", borderRadius: 12,
+      border: "1px solid #27272a",
+      borderLeft: "3px solid " + colors.accent,
+      overflow: "hidden",
+    }}>
+      <div style={{ padding: "14px 16px 12px", cursor: "pointer" }} onClick={() => setExpanded(!expanded)}>
+        {/* Top row: kit badge + action button */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+          <Badge color={colors.text} bg={colors.badge}>{item.kit}</Badge>
+          <div style={{ display: "flex", gap: 6 }} onClick={e => e.stopPropagation()}>
+            {isFresh ? (
+              <button onClick={onDiscard} style={{
+                padding: "3px 8px", borderRadius: 4, border: "1px solid #7f1d1d",
+                background: "transparent", color: "#f87171", fontSize: 10, fontWeight: 700,
+                cursor: "pointer", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em",
+              }}>DISCARD</button>
+            ) : (
+              <button onClick={onReactivate} style={{
+                padding: "3px 8px", borderRadius: 4, border: "1px solid #14532d",
+                background: "transparent", color: "#4ade80", fontSize: 10, fontWeight: 700,
+                cursor: "pointer", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.06em",
+              }}>REACTIVATE</button>
+            )}
           </div>
-          <div style={{ display: "flex", gap: 16, color: "#71717a", fontSize: 12, marginBottom: 6 }}>
-            <span>{item.notes}</span>
-            <span>{item.mixDate}</span>
+        </div>
+
+        {/* Chemistry name */}
+        <div style={{ fontWeight: 700, color: "#fafafa", fontSize: 17, marginBottom: 3, fontFamily: "'Space Mono', monospace" }}>
+          {item.chem}
+        </div>
+
+        {/* Brand */}
+        {item.notes && (
+          <div style={{ fontSize: 11, color: "#71717a", marginBottom: 6 }}>{item.notes}</div>
+        )}
+
+        {/* Date range */}
+        <div style={{ fontSize: 11, color: "#52525b", marginBottom: 10, fontFamily: "'JetBrains Mono', monospace" }}>
+          {dateRange !== "-" ? dateRange : "—"}
+        </div>
+
+        {/* Status + progress */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 12 }}>
+          <Badge color={isFresh ? "#22c55e" : "#71717a"} bg={isFresh ? "#052e16" : "#27272a"}>
+            {isFresh ? "ACTIVE" : "DISCARDED"}
+          </Badge>
+          <div style={{ flex: 1 }}>
+            <ProgressBar used={used} max={max} accent={colors.accent} />
           </div>
-          <ProgressBar used={used} max={max} accent={colors.accent} />
+        </div>
+
+        {/* LOG ROLLS button */}
+        <div onClick={e => e.stopPropagation()}>
+          <button onClick={onLogRolls} style={{
+            width: "100%", padding: "8px", borderRadius: 7,
+            border: "1px solid " + colors.accent + "44",
+            background: colors.accent + "18",
+            color: colors.accent, fontSize: 11, fontWeight: 700,
+            cursor: "pointer", fontFamily: "'JetBrains Mono', monospace", letterSpacing: "0.08em",
+          }}>LOG ROLLS</button>
         </div>
       </div>
 
+      {/* Expanded panel */}
       {expanded && (
-        <div style={{
-          marginTop: 12, paddingTop: 12, borderTop: "1px solid #27272a",
-          fontSize: 13, color: "#a1a1aa", lineHeight: 1.6,
-        }}>
+        <div style={{ padding: "12px 16px 14px", borderTop: "1px solid #27272a", background: "#111113" }}>
           {item.rolls && (
-            <div style={{ marginBottom: 6 }}>
-              <span style={{ color: "#71717a", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Roll Log</span>
-              <div style={{ color: "#d4d4d8", marginTop: 2, fontFamily: "'JetBrains Mono', monospace", fontSize: 12 }}>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ color: "#52525b", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 5 }}>Roll Log</div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                 {item.rolls.split(",").map((r, i) => (
-                  <span key={i} style={{ display: "inline-block", background: "#27272a", borderRadius: 4, padding: "1px 6px", margin: "2px 4px 2px 0" }}>
-                    {r.trim()}
-                  </span>
+                  <span key={i} style={{
+                    background: "#27272a", borderRadius: 4, padding: "2px 6px",
+                    fontSize: 11, color: "#d4d4d8", fontFamily: "'JetBrains Mono', monospace",
+                  }}>{r.trim()}</span>
                 ))}
               </div>
             </div>
           )}
           {item.extra && (
             <div style={{ marginBottom: 10 }}>
-              <span style={{ color: "#71717a", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: "0.05em" }}>Notes</span>
-              <div style={{ color: "#fbbf24", marginTop: 2 }}>{item.extra}</div>
+              <div style={{ color: "#52525b", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Notes</div>
+              <div style={{ color: "#fbbf24", fontSize: 12 }}>{item.extra}</div>
             </div>
           )}
-          <div style={{ display: "flex", gap: 8, marginTop: 10 }} onClick={e => e.stopPropagation()}>
-            <button onClick={onStatusToggle} style={actionBtnStyle(isFresh ? "#ef4444" : "#4ade80", isFresh ? "#7f1d1d" : "#14532d")}>
-              {isFresh ? "DISCARD" : "REACTIVATE"}
-            </button>
-            <button onClick={onEdit} style={actionBtnStyle("#818cf8", "#312e81")}>
-              EDIT
-            </button>
-            <button onClick={onDelete} style={actionBtnStyle("#f87171", "#7f1d1d")}>
-              DELETE
-            </button>
+          <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
+            <button
+              onClick={e => { e.stopPropagation(); onEdit(); }}
+              style={{
+                flex: 1, padding: "7px", borderRadius: 6, border: "1px solid #312e81",
+                background: "transparent", color: "#818cf8", fontSize: 10, fontWeight: 700,
+                cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+              }}>EDIT</button>
+            <button
+              onClick={e => { e.stopPropagation(); onDelete(); }}
+              style={{
+                flex: 1, padding: "7px", borderRadius: 6, border: "1px solid #7f1d1d",
+                background: "transparent", color: "#f87171", fontSize: 10, fontWeight: 700,
+                cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+              }}>DELETE</button>
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+function LogRollsModal({ item, onClose, onSave }) {
+  const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
+  const [count, setCount] = useState("");
+  const [date, setDate] = useState(todayAsLogDate);
+
+  const handleSave = () => {
+    const n = parseInt(count);
+    if (!count || isNaN(n) || n < 1) return;
+    const entry = n + " on " + date;
+    const newRolls = item.rolls ? item.rolls + ", " + entry : entry;
+    onSave({ ...item, rolls: newRolls });
+    onClose();
+  };
+
+  const inputStyle = {
+    width: "100%", padding: "10px 12px", borderRadius: 8, border: "1px solid #3f3f46",
+    background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none",
+    fontFamily: "'JetBrains Mono', monospace", boxSizing: "border-box",
+  };
+
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
+      onClick={onClose}>
+      <div style={{ background: "#09090b", borderRadius: 16, padding: 24, maxWidth: 360, width: "100%", border: "1px solid #27272a" }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+          <Badge color={colors.text} bg={colors.badge}>{item.kit}</Badge>
+          <span style={{ color: "#fafafa", fontWeight: 700, fontSize: 15, fontFamily: "'Space Mono', monospace" }}>
+            Log Rolls — {item.chem}
+          </span>
+        </div>
+        {item.rolls && (
+          <div style={{ marginBottom: 14, padding: "10px 12px", background: "#18181b", borderRadius: 8, border: "1px solid #27272a" }}>
+            <div style={{ color: "#52525b", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 4 }}>Current Log</div>
+            <div style={{ color: "#a1a1aa", fontSize: 11, fontFamily: "'JetBrains Mono', monospace", lineHeight: 1.5 }}>{item.rolls}</div>
+          </div>
+        )}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+          <div>
+            <label style={{ display: "block", color: "#a1a1aa", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>Rolls</label>
+            <input type="number" min="1" max="999" placeholder="e.g. 5" value={count} onChange={e => setCount(e.target.value)} style={inputStyle} />
+          </div>
+          <div>
+            <label style={{ display: "block", color: "#a1a1aa", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6, fontFamily: "'JetBrains Mono', monospace" }}>Date (DD.MM.YY)</label>
+            <input placeholder="DD.MM.YY" value={date} onChange={e => setDate(e.target.value)} style={inputStyle} />
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <button onClick={onClose} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46",
+            background: "transparent", color: "#a1a1aa", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace",
+          }}>Cancel</button>
+          <button onClick={handleSave} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "none",
+            background: colors.accent, color: "#09090b", cursor: "pointer",
+            fontSize: 12, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+          }}>LOG ROLLS</button>
+        </div>
+      </div>
     </div>
   );
 }
@@ -290,14 +457,14 @@ function AddBatchModal({ onClose, onAdd, nextId }) {
     background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", boxSizing: "border-box",
     fontFamily: "'JetBrains Mono', monospace",
   };
-  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 12, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" };
+  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono', monospace" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
       onClick={onClose}>
       <div style={{ background: "#09090b", borderRadius: 16, padding: 24, maxWidth: 440, width: "100%", border: "1px solid #27272a", maxHeight: "90vh", overflowY: "auto" }}
         onClick={e => e.stopPropagation()}>
-        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 20, fontFamily: "'Space Mono', monospace" }}>New Batch</h2>
+        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 18, fontFamily: "'Space Mono', monospace" }}>New Batch</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={labelStyle}>Kit</label>
@@ -334,15 +501,16 @@ function AddBatchModal({ onClose, onAdd, nextId }) {
           <input value={form.extra} onChange={e => set("extra", e.target.value)} style={inputStyle} />
         </div>
         <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-          <button onClick={onClose}
-            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46", background: "transparent", color: "#a1a1aa", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
-            Cancel
-          </button>
-          <button
-            onClick={() => { if (form.mixDate) { onAdd({ ...form, id: nextId }); onClose(); } }}
-            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: "#fafafa", color: "#09090b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
-            Add Batch
-          </button>
+          <button onClick={onClose} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46",
+            background: "transparent", color: "#a1a1aa", cursor: "pointer",
+            fontSize: 13, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace",
+          }}>Cancel</button>
+          <button onClick={() => { if (form.mixDate) { onAdd({ ...form, id: nextId }); onClose(); } }} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "none",
+            background: "#fafafa", color: "#09090b", cursor: "pointer",
+            fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+          }}>Add Batch</button>
         </div>
       </div>
     </div>
@@ -358,14 +526,14 @@ function EditBatchModal({ item, onClose, onSave }) {
     background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", boxSizing: "border-box",
     fontFamily: "'JetBrains Mono', monospace",
   };
-  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 12, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em" };
+  const labelStyle = { display: "block", color: "#a1a1aa", fontSize: 11, fontWeight: 600, marginBottom: 4, textTransform: "uppercase", letterSpacing: "0.05em", fontFamily: "'JetBrains Mono', monospace" };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.7)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100, padding: 16 }}
       onClick={onClose}>
       <div style={{ background: "#09090b", borderRadius: 16, padding: 24, maxWidth: 440, width: "100%", border: "1px solid #27272a", maxHeight: "90vh", overflowY: "auto" }}
         onClick={e => e.stopPropagation()}>
-        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 20, fontFamily: "'Space Mono', monospace" }}>Edit Batch</h2>
+        <h2 style={{ color: "#fafafa", margin: "0 0 20px", fontSize: 18, fontFamily: "'Space Mono', monospace" }}>Edit Batch</h2>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <div>
             <label style={labelStyle}>Kit</label>
@@ -409,31 +577,28 @@ function EditBatchModal({ item, onClose, onSave }) {
           <input value={form.extra} onChange={e => set("extra", e.target.value)} style={inputStyle} />
         </div>
         <div style={{ display: "flex", gap: 10, marginTop: 20 }}>
-          <button onClick={onClose}
-            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46", background: "transparent", color: "#a1a1aa", cursor: "pointer", fontSize: 14, fontWeight: 600 }}>
-            Cancel
-          </button>
-          <button
-            onClick={() => { onSave(form); onClose(); }}
-            style={{ flex: 1, padding: "10px", borderRadius: 8, border: "none", background: "#fafafa", color: "#09090b", cursor: "pointer", fontSize: 14, fontWeight: 700 }}>
-            Save Changes
-          </button>
+          <button onClick={onClose} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "1px solid #3f3f46",
+            background: "transparent", color: "#a1a1aa", cursor: "pointer",
+            fontSize: 13, fontWeight: 600, fontFamily: "'JetBrains Mono', monospace",
+          }}>Cancel</button>
+          <button onClick={() => { onSave(form); onClose(); }} style={{
+            flex: 1, padding: "10px", borderRadius: 8, border: "none",
+            background: "#fafafa", color: "#09090b", cursor: "pointer",
+            fontSize: 13, fontWeight: 700, fontFamily: "'JetBrains Mono', monospace",
+          }}>Save Changes</button>
         </div>
       </div>
     </div>
   );
 }
 
-function AllBatchesTable({ data, onEdit, onDelete }) {
+function AllBatchesTable({ data, onEdit, onDelete, onLogRolls }) {
   const thStyle = {
     padding: "8px 10px", textAlign: "left", fontSize: 10, fontWeight: 700,
-    color: "#52525b", textTransform: "uppercase", letterSpacing: "0.08em",
+    color: "#52525b", textTransform: "uppercase", letterSpacing: "0.1em",
     borderBottom: "1px solid #27272a", whiteSpace: "nowrap",
-  };
-  const tdStyle = {
-    padding: "8px 10px", fontSize: 12, color: "#d4d4d8",
-    borderBottom: "1px solid #18181b", verticalAlign: "top",
-    maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap",
+    fontFamily: "'JetBrains Mono', monospace",
   };
 
   return (
@@ -442,19 +607,20 @@ function AllBatchesTable({ data, onEdit, onDelete }) {
         <thead>
           <tr style={{ background: "#111113" }}>
             <th style={thStyle}>Kit</th>
-            <th style={thStyle}>Chemistry</th>
-            <th style={thStyle}>Mix Date</th>
-            <th style={thStyle}>Max Rolls</th>
+            <th style={thStyle}>Chem</th>
             <th style={thStyle}>Brand</th>
-            <th style={thStyle}>Rolls</th>
+            <th style={thStyle}>Mixed</th>
+            <th style={{ ...thStyle, minWidth: 130 }}>Usage</th>
             <th style={thStyle}>Status</th>
-            <th style={{ ...thStyle, textAlign: "center" }}>Delete</th>
+            <th style={{ ...thStyle, textAlign: "center" }}>Actions</th>
           </tr>
         </thead>
         <tbody>
           {data.map((item, idx) => {
             const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
             const isFresh = item.status === "Fresh";
+            const used = parseRollCount(item.rolls);
+            const max = parseMaxRolls(item.maxRolls);
             return (
               <tr
                 key={item.id}
@@ -463,27 +629,34 @@ function AllBatchesTable({ data, onEdit, onDelete }) {
                 onMouseEnter={e => e.currentTarget.style.background = "#1f1f23"}
                 onMouseLeave={e => e.currentTarget.style.background = idx % 2 === 0 ? "#18181b" : "#111113"}
               >
-                <td style={{ ...tdStyle, color: colors.accent, fontWeight: 700 }}>{item.kit}</td>
-                <td style={{ ...tdStyle, color: "#fafafa", fontWeight: 600 }}>{item.chem}</td>
-                <td style={tdStyle}>{item.mixDate}</td>
-                <td style={tdStyle}>{item.maxRolls || "-"}</td>
-                <td style={{ ...tdStyle, color: "#a1a1aa" }}>{item.notes}</td>
-                <td style={{ ...tdStyle, maxWidth: 200 }}>{item.rolls || "—"}</td>
-                <td style={{ ...tdStyle, color: isFresh ? "#4ade80" : "#71717a" }}>
-                  {isFresh ? "Active" : "Discarded"}
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b" }}>
+                  <Badge color={colors.text} bg={colors.badge}>{item.kit}</Badge>
                 </td>
-                <td style={{ ...tdStyle, textAlign: "center" }} onClick={e => e.stopPropagation()}>
-                  <button
-                    onDoubleClick={e => e.stopPropagation()}
-                    onClick={() => onDelete(item.id)}
-                    style={{
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b", color: "#fafafa", fontWeight: 600, fontSize: 12, whiteSpace: "nowrap" }}>{item.chem}</td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b", color: "#71717a", fontSize: 11, maxWidth: 120, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.notes}</td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b", color: "#52525b", fontSize: 11, fontFamily: "'JetBrains Mono', monospace", whiteSpace: "nowrap" }}>{item.mixDate}</td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b", minWidth: 130 }}>
+                  <ProgressBar used={used} max={max} accent={colors.accent} />
+                </td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b" }}>
+                  <Badge color={isFresh ? "#22c55e" : "#71717a"} bg={isFresh ? "#052e16" : "#27272a"}>
+                    {isFresh ? "ACTIVE" : "DISCARDED"}
+                  </Badge>
+                </td>
+                <td style={{ padding: "8px 10px", borderBottom: "1px solid #18181b", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+                  <div style={{ display: "flex", gap: 4, justifyContent: "center" }}>
+                    <button onClick={() => onLogRolls(item)} title="Log Rolls" style={{
+                      padding: "3px 8px", borderRadius: 4, border: "1px solid " + colors.badge,
+                      background: "transparent", color: colors.accent, fontSize: 10, fontWeight: 700,
+                      cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+                    }}>LOG</button>
+                    <button onDoubleClick={e => e.stopPropagation()} onClick={() => onDelete(item.id)} title="Delete" style={{
                       background: "transparent", border: "1px solid #7f1d1d", color: "#f87171",
-                      borderRadius: 6, cursor: "pointer", fontSize: 14, width: 26, height: 26,
+                      borderRadius: 4, cursor: "pointer", fontSize: 12, width: 24, height: 24,
                       display: "inline-flex", alignItems: "center", justifyContent: "center",
-                      fontFamily: "'JetBrains Mono', monospace", lineHeight: 1,
-                    }}
-                    title="Delete batch"
-                  >×</button>
+                      fontFamily: "'JetBrains Mono', monospace",
+                    }}>×</button>
+                  </div>
                 </td>
               </tr>
             );
@@ -494,17 +667,177 @@ function AllBatchesTable({ data, onEdit, onDelete }) {
   );
 }
 
-function App() {
-  const [data, setData] = useState(INITIAL_DATA);
+function StatsView({ data }) {
+  const rollsByKit = {};
+  ["C41", "ECN-2", "E6", "B&W"].forEach(k => { rollsByKit[k] = 0; });
+  data.forEach(d => { rollsByKit[d.kit] = (rollsByKit[d.kit] || 0) + parseRollCount(d.rolls); });
+  const maxKit = Math.max(...Object.values(rollsByKit), 1);
+
+  const rollsByChem = {};
+  data.forEach(d => { rollsByChem[d.chem] = (rollsByChem[d.chem] || 0) + parseRollCount(d.rolls); });
+  const topChems = Object.entries(rollsByChem).sort((a, b) => b[1] - a[1]).slice(0, 8);
+  const maxChem = topChems.length > 0 ? topChems[0][1] : 1;
+
+  const batchesByKit = {};
+  ["C41", "ECN-2", "E6", "B&W"].forEach(k => { batchesByKit[k] = 0; });
+  data.forEach(d => { batchesByKit[d.kit] = (batchesByKit[d.kit] || 0) + 1; });
+
+  const sectionTitle = { color: "#fafafa", fontSize: 12, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 16, fontFamily: "'JetBrains Mono', monospace" };
+
+  return (
+    <div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
+        <div style={{ background: "#18181b", borderRadius: 12, padding: "18px 20px", border: "1px solid #27272a" }}>
+          <div style={sectionTitle}>Rolls by Kit</div>
+          {["C41", "ECN-2", "E6", "B&W"].map(kit => (
+            <HorizontalBar key={kit} label={kit} value={rollsByKit[kit]} maxValue={maxKit} color={KIT_COLORS[kit].accent} labelColor={KIT_COLORS[kit].accent} />
+          ))}
+        </div>
+        <div style={{ background: "#18181b", borderRadius: 12, padding: "18px 20px", border: "1px solid #27272a" }}>
+          <div style={sectionTitle}>Top Chemicals</div>
+          {topChems.map(([chem, count]) => (
+            <HorizontalBar key={chem} label={chem} value={count} maxValue={maxChem} color="#818cf8" />
+          ))}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, background: "#18181b", borderRadius: 12, padding: "18px 20px", border: "1px solid #27272a" }}>
+        <div style={sectionTitle}>Batches by Kit</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 12 }}>
+          {["C41", "ECN-2", "E6", "B&W"].map(kit => {
+            const colors = KIT_COLORS[kit];
+            return (
+              <div key={kit} style={{ background: colors.bg, borderRadius: 8, padding: "14px 16px", border: "1px solid " + colors.badge }}>
+                <div style={{ fontSize: 24, fontWeight: 700, color: colors.accent, fontFamily: "'JetBrains Mono', monospace" }}>{batchesByKit[kit]}</div>
+                <div style={{ fontSize: 10, color: colors.text, textTransform: "uppercase", letterSpacing: "0.1em", marginTop: 3 }}>{kit}</div>
+                <div style={{ fontSize: 10, color: "#52525b", marginTop: 2 }}>{rollsByKit[kit]} rolls</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ActiveView({ data, onLogRolls, onDiscard, onReactivate, onEdit, onDelete }) {
+  const [filterKit, setFilterKit] = useState("All");
+  const activeBatches = data.filter(d => d.status === "Fresh");
+  const filtered = filterKit === "All" ? activeBatches : activeBatches.filter(d => d.kit === filterKit);
+
+  return (
+    <div>
+      <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 14 }}>
+        {["All", "C41", "ECN-2", "E6", "B&W"].map(k => (
+          <button key={k} onClick={() => setFilterKit(k)} style={pillStyle(filterKit === k)}>{k}</button>
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: "#52525b", marginBottom: 14, fontFamily: "'JetBrains Mono', monospace" }}>
+        {filtered.length} active batch{filtered.length !== 1 ? "es" : ""}
+      </div>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 60, color: "#3f3f46" }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>~</div>
+          <div style={{ fontSize: 13 }}>No active batches</div>
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 12 }}>
+          {filtered.map(item => {
+            const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
+            return (
+              <ChemCard
+                key={item.id} item={item} colors={colors}
+                onLogRolls={() => onLogRolls(item)}
+                onDiscard={() => onDiscard(item.id)}
+                onReactivate={() => onReactivate(item.id)}
+                onEdit={() => onEdit(item)}
+                onDelete={() => onDelete(item.id)}
+              />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function AllBatchesView({ data, onEdit, onDelete, onLogRolls, onDiscard, onReactivate }) {
+  const [search, setSearch] = useState("");
   const [filterKit, setFilterKit] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
-  const [searchQ, setSearchQ] = useState("");
-  const [expanded, setExpanded] = useState(null);
+  const [sortBy, setSortBy] = useState("date_desc");
+
+  let filtered = data.filter(d => {
+    if (filterKit !== "All" && d.kit !== filterKit) return false;
+    if (filterStatus !== "All" && d.status !== filterStatus) return false;
+    if (search) {
+      const q = search.toLowerCase();
+      return (d.chem + d.notes + d.kit + d.rolls + d.extra).toLowerCase().includes(q);
+    }
+    return true;
+  });
+
+  filtered.sort((a, b) => {
+    if (sortBy === "date_desc") return parseDateForSort(b.mixDate) - parseDateForSort(a.mixDate);
+    if (sortBy === "date_asc") return parseDateForSort(a.mixDate) - parseDateForSort(b.mixDate);
+    if (sortBy === "kit") return a.kit.localeCompare(b.kit);
+    return 0;
+  });
+
+  return (
+    <div>
+      <input
+        placeholder="Search chemistry, brand, notes..."
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        style={{
+          width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #27272a",
+          background: "#18181b", color: "#fafafa", fontSize: 13, outline: "none", marginBottom: 12,
+          boxSizing: "border-box", fontFamily: "'JetBrains Mono', monospace",
+        }}
+      />
+      <div style={{ display: "flex", gap: 6, marginBottom: 8, flexWrap: "wrap", alignItems: "center" }}>
+        {["All", "C41", "ECN-2", "E6", "B&W"].map(k => (
+          <button key={k} onClick={() => setFilterKit(k)} style={pillStyle(filterKit === k)}>{k}</button>
+        ))}
+        <div style={{ width: 1, height: 20, background: "#27272a", margin: "0 2px" }} />
+        {[["All", "All"], ["Fresh", "Active"], ["Discarded", "Discarded"]].map(([val, label]) => (
+          <button key={val} onClick={() => setFilterStatus(val)} style={pillStyle(filterStatus === val)}>{label}</button>
+        ))}
+        <div style={{ marginLeft: "auto" }}>
+          <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
+            background: "#27272a", color: "#a1a1aa", border: "none", borderRadius: 8,
+            padding: "5px 10px", fontSize: 11, cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            <option value="date_desc">Newest first</option>
+            <option value="date_asc">Oldest first</option>
+            <option value="kit">By kit</option>
+          </select>
+        </div>
+      </div>
+      <div style={{ fontSize: 11, color: "#52525b", marginBottom: 10, fontFamily: "'JetBrains Mono', monospace" }}>
+        {filtered.length} batch{filtered.length !== 1 ? "es" : ""} — double-click row to edit
+      </div>
+      {filtered.length === 0 ? (
+        <div style={{ textAlign: "center", padding: 40, color: "#3f3f46" }}>
+          <div style={{ fontSize: 32, marginBottom: 8 }}>~</div>
+          <div style={{ fontSize: 13 }}>No batches match your filters</div>
+        </div>
+      ) : (
+        <AllBatchesTable data={filtered} onEdit={onEdit} onDelete={onDelete} onLogRolls={onLogRolls} />
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [data, setData] = useState(INITIAL_DATA);
+  const [tab, setTab] = useState("active");
   const [showAdd, setShowAdd] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [sortBy, setSortBy] = useState("date_desc");
-  const [view, setView] = useState("cards");
+  const [showLogRolls, setShowLogRolls] = useState(false);
+  const [logRollsItem, setLogRollsItem] = useState(null);
 
   useEffect(() => {
     try {
@@ -524,197 +857,110 @@ function App() {
     }
   }, []);
 
-  const handleAdd = (batch) => save([...data, batch]);
-
-  const handleEdit = (updatedItem) => {
-    save(data.map(d => d.id === updatedItem.id ? updatedItem : d));
-  };
-
-  const handleDelete = (id) => {
+  const handleAdd = batch => save([...data, batch]);
+  const handleEdit = updated => save(data.map(d => d.id === updated.id ? updated : d));
+  const handleDelete = id => {
     if (window.confirm("Delete this batch? This cannot be undone.")) {
-      setExpanded(null);
       save(data.filter(d => d.id !== id));
     }
   };
-
-  const handleStatusToggle = (id) => {
-    save(data.map(d => d.id === id ? { ...d, status: d.status === "Fresh" ? "Discarded" : "Fresh" } : d));
-  };
-
-  const handleOpenEdit = (item) => { setEditItem(item); setShowEdit(true); };
+  const handleStatusToggle = id => save(data.map(d => d.id === id ? { ...d, status: d.status === "Fresh" ? "Discarded" : "Fresh" } : d));
+  const handleOpenEdit = item => { setEditItem(item); setShowEdit(true); };
+  const handleOpenLogRolls = item => { setLogRollsItem(item); setShowLogRolls(true); };
 
   const exportCSV = () => {
     const headers = ["ID", "Kit", "Chemistry", "Mix Date", "Max Rolls", "Brand/Notes", "Roll Log", "Additional Notes", "Status"];
     const rows = data.map(d => [d.id, d.kit, d.chem, d.mixDate, d.maxRolls, d.notes, d.rolls, d.extra, d.status]);
-    const csv = [headers, ...rows].map(r => r.map(v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [headers, ...rows].map(r => r.map(v => '"' + String(v == null ? "" : v).replace(/"/g, '""') + '"').join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
-    a.href = url;
-    a.download = "chemistry-tracker.csv";
-    a.click();
+    a.href = url; a.download = "chemistry-tracker.csv"; a.click();
     URL.revokeObjectURL(url);
   };
 
-  let filtered = data.filter(d => {
-    if (filterKit !== "All" && d.kit !== filterKit) return false;
-    if (filterStatus !== "All" && d.status !== filterStatus) return false;
-    if (searchQ) {
-      const q = searchQ.toLowerCase();
-      return (d.chem + d.notes + d.kit + d.rolls + d.extra).toLowerCase().includes(q);
-    }
-    return true;
-  });
-
-  filtered.sort((a, b) => {
-    if (sortBy === "date_desc") return parseDateForSort(b.mixDate) - parseDateForSort(a.mixDate);
-    if (sortBy === "date_asc") return parseDateForSort(a.mixDate) - parseDateForSort(b.mixDate);
-    if (sortBy === "kit") return a.kit.localeCompare(b.kit);
-    return 0;
-  });
-
   const freshCount = data.filter(d => d.status === "Fresh").length;
-  const discardedCount = data.filter(d => d.status === "Discarded").length;
+  const archivedCount = data.filter(d => d.status !== "Fresh").length;
+  const totalRolls = data.reduce((sum, d) => sum + parseRollCount(d.rolls), 0);
 
-  const kits = ["All", "C41", "ECN-2", "E6", "B&W"];
-
-  const pillStyle = (active) => ({
-    padding: "6px 14px", borderRadius: 999, border: "none", cursor: "pointer",
-    fontSize: 13, fontWeight: 600,
-    background: active ? "#fafafa" : "#27272a",
-    color: active ? "#09090b" : "#a1a1aa",
+  const tabBtnStyle = (id) => ({
+    padding: "10px 18px", border: "none", cursor: "pointer",
+    fontSize: 11, fontWeight: 700, letterSpacing: "0.1em",
+    fontFamily: "'JetBrains Mono', monospace",
+    background: "transparent",
+    color: tab === id ? "#fafafa" : "#52525b",
+    borderBottom: "2px solid " + (tab === id ? "#fafafa" : "transparent"),
     transition: "all 0.15s ease",
     whiteSpace: "nowrap",
   });
 
   return (
-    <div style={{
-      minHeight: "100vh", background: "#09090b", color: "#fafafa",
-      fontFamily: "'Space Mono', 'JetBrains Mono', monospace",
-    }}>
+    <div style={{ minHeight: "100vh", background: "#09090b", color: "#fafafa", fontFamily: "'Space Mono', 'JetBrains Mono', monospace" }}>
       <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
 
-      <div style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px 80px" }}>
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div>
-              <div style={{ fontSize: 11, color: "#52525b", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 4 }}>Eternus Film</div>
-              <h1 style={{ margin: 0, fontSize: 26, fontWeight: 700, letterSpacing: "-0.02em" }}>Chemistry Tracker</h1>
-            </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={exportCSV} title="Export CSV" style={{
-              height: 44, padding: "0 14px", borderRadius: 12, border: "1px solid #27272a",
-              background: "#18181b", color: "#a1a1aa", fontSize: 12, cursor: "pointer",
-              fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, whiteSpace: "nowrap",
-            }}>CSV ↓</button>
-            <div style={{ display: "flex", borderRadius: 12, overflow: "hidden", border: "1px solid #27272a" }}>
-              <button onClick={() => setView("cards")} style={{
-                padding: "0 14px", height: 44, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
-                fontFamily: "'JetBrains Mono', monospace",
-                background: view === "cards" ? "#fafafa" : "#18181b",
-                color: view === "cards" ? "#09090b" : "#a1a1aa",
-              }}>Cards</button>
-              <button onClick={() => setView("table")} style={{
-                padding: "0 14px", height: 44, border: "none", cursor: "pointer", fontSize: 12, fontWeight: 700,
-                fontFamily: "'JetBrains Mono', monospace",
-                background: view === "table" ? "#fafafa" : "#18181b",
-                color: view === "table" ? "#09090b" : "#a1a1aa",
-              }}>Table</button>
-            </div>
-            <button onClick={() => setShowAdd(true)} style={{
-              width: 44, height: 44, borderRadius: 12, border: "none",
-              background: "#fafafa", color: "#09090b", fontSize: 24, cursor: "pointer",
-              display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700,
-            }}>+</button>
-          </div>
-          </div>
+      {/* ── Header ── */}
+      <header style={{
+        padding: "14px 24px", borderBottom: "1px solid #18181b",
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        background: "#09090b", position: "sticky", top: 0, zIndex: 50,
+      }}>
+        <div>
+          <div style={{ fontSize: 10, color: "#52525b", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase" }}>ETERNUS FILM</div>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 700, letterSpacing: "-0.01em" }}>Chemistry Tracker</h1>
+        </div>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button onClick={exportCSV} style={{
+            padding: "8px 14px", borderRadius: 8, border: "1px solid #27272a",
+            background: "#18181b", color: "#a1a1aa", fontSize: 11, cursor: "pointer",
+            fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.06em",
+          }}>EXPORT CSV</button>
+          <button onClick={() => setShowAdd(true)} style={{
+            padding: "8px 14px", borderRadius: 8, border: "none",
+            background: "#fafafa", color: "#09090b", fontSize: 11, cursor: "pointer",
+            fontFamily: "'JetBrains Mono', monospace", fontWeight: 700, letterSpacing: "0.06em",
+          }}>+ NEW BATCH</button>
+        </div>
+      </header>
 
-          <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
-            <div style={{ flex: 1, background: "#052e16", borderRadius: 10, padding: "10px 14px" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#4ade80" }}>{freshCount}</div>
-              <div style={{ fontSize: 11, color: "#86efac", textTransform: "uppercase", letterSpacing: "0.1em" }}>Active</div>
-            </div>
-            <div style={{ flex: 1, background: "#18181b", borderRadius: 10, padding: "10px 14px" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#71717a" }}>{discardedCount}</div>
-              <div style={{ fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Discarded</div>
-            </div>
-            <div style={{ flex: 1, background: "#18181b", borderRadius: 10, padding: "10px 14px" }}>
-              <div style={{ fontSize: 22, fontWeight: 700, color: "#fafafa" }}>{data.length}</div>
-              <div style={{ fontSize: 11, color: "#52525b", textTransform: "uppercase", letterSpacing: "0.1em" }}>Total</div>
-            </div>
-          </div>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "20px 20px 80px" }}>
+
+        {/* ── Stats Cards ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10, marginBottom: 24 }}>
+          <StatCard value={freshCount}   label="Active"      valueColor="#4ade80" bg="#052e16" />
+          <StatCard value={archivedCount} label="Archived"   valueColor="#71717a" bg="#18181b" />
+          <StatCard value={data.length}  label="Batches"     valueColor="#fafafa" bg="#18181b" />
+          <StatCard value={totalRolls}   label="Rolls Total" valueColor="#fafafa" bg="#18181b" />
         </div>
 
-        <input
-          placeholder="Search chemistry, brand, notes..."
-          value={searchQ}
-          onChange={e => setSearchQ(e.target.value)}
-          style={{
-            width: "100%", padding: "10px 14px", borderRadius: 10, border: "1px solid #27272a",
-            background: "#18181b", color: "#fafafa", fontSize: 14, outline: "none", marginBottom: 14,
-            boxSizing: "border-box", fontFamily: "'JetBrains Mono', monospace",
-          }}
-        />
-
-        <div style={{ display: "flex", gap: 6, overflowX: "auto", paddingBottom: 4, marginBottom: 8 }}>
-          {kits.map(k => (
-            <button key={k} onClick={() => setFilterKit(k)} style={pillStyle(filterKit === k)}>{k}</button>
-          ))}
-        </div>
-        <div style={{ display: "flex", gap: 6, marginBottom: 14, alignItems: "center", flexWrap: "wrap" }}>
-          {["All", "Fresh", "Discarded"].map(s => (
-            <button key={s} onClick={() => setFilterStatus(s)} style={pillStyle(filterStatus === s)}>
-              {s === "Fresh" ? "Active" : s}
-            </button>
-          ))}
-          <div style={{ marginLeft: "auto" }}>
-            <select value={sortBy} onChange={e => setSortBy(e.target.value)} style={{
-              background: "#27272a", color: "#a1a1aa", border: "none", borderRadius: 8,
-              padding: "6px 10px", fontSize: 12, cursor: "pointer", fontFamily: "'JetBrains Mono', monospace",
-            }}>
-              <option value="date_desc">Newest first</option>
-              <option value="date_asc">Oldest first</option>
-              <option value="kit">By kit</option>
-            </select>
-          </div>
+        {/* ── Tabs ── */}
+        <div style={{ display: "flex", borderBottom: "1px solid #27272a", marginBottom: 20 }}>
+          <button style={tabBtnStyle("active")} onClick={() => setTab("active")}>ACTIVE</button>
+          <button style={tabBtnStyle("all")} onClick={() => setTab("all")}>ALL BATCHES</button>
+          <button style={tabBtnStyle("stats")} onClick={() => setTab("stats")}>STATS</button>
         </div>
 
-        <div style={{ fontSize: 12, color: "#52525b", marginBottom: 10, fontWeight: 600, display: "flex", alignItems: "center", gap: 12 }}>
-          <span>{filtered.length} batch{filtered.length !== 1 ? "es" : ""}</span>
-          {view === "table" && <span style={{ fontWeight: 400, color: "#3f3f46" }}>double-click row to edit</span>}
-        </div>
-
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {view === "cards" ? filtered.map(item => {
-            const colors = KIT_COLORS[item.kit] || KIT_COLORS["B&W"];
-            return (
-              <div key={item.id}>
-                <ChemCard
-                  item={item}
-                  colors={colors}
-                  expanded={expanded === item.id}
-                  onToggle={() => setExpanded(expanded === item.id ? null : item.id)}
-                  onStatusToggle={() => handleStatusToggle(item.id)}
-                  onEdit={() => handleOpenEdit(item)}
-                  onDelete={() => handleDelete(item.id)}
-                />
-              </div>
-            );
-          }) : (
-            <AllBatchesTable
-              data={filtered}
-              onEdit={handleOpenEdit}
-              onDelete={handleDelete}
-            />
-          )}
-        </div>
-
-        {filtered.length === 0 && (
-          <div style={{ textAlign: "center", padding: 40, color: "#3f3f46" }}>
-            <div style={{ fontSize: 32, marginBottom: 8 }}>~</div>
-            <div style={{ fontSize: 14 }}>No batches match your filters</div>
-          </div>
+        {/* ── Tab Content ── */}
+        {tab === "active" && (
+          <ActiveView
+            data={data}
+            onLogRolls={handleOpenLogRolls}
+            onDiscard={handleStatusToggle}
+            onReactivate={handleStatusToggle}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+          />
         )}
+        {tab === "all" && (
+          <AllBatchesView
+            data={data}
+            onEdit={handleOpenEdit}
+            onDelete={handleDelete}
+            onLogRolls={handleOpenLogRolls}
+            onDiscard={handleStatusToggle}
+            onReactivate={handleStatusToggle}
+          />
+        )}
+        {tab === "stats" && <StatsView data={data} />}
       </div>
 
       {showAdd && (
@@ -728,6 +974,13 @@ function App() {
         <EditBatchModal
           item={editItem}
           onClose={() => { setShowEdit(false); setEditItem(null); }}
+          onSave={handleEdit}
+        />
+      )}
+      {showLogRolls && logRollsItem && (
+        <LogRollsModal
+          item={logRollsItem}
+          onClose={() => { setShowLogRolls(false); setLogRollsItem(null); }}
           onSave={handleEdit}
         />
       )}
