@@ -35,7 +35,7 @@ body::before{content:'';position:fixed;inset:0;background:var(--grain);pointer-e
 input,select,textarea,button{font-family:inherit}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+20px);padding-bottom:calc(var(--safe-bot)+140px)}
+.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+20px);padding-bottom:calc(var(--safe-bot)+200px)}
 .page{display:none}.page.active{display:block}
 
 /* Bottom nav */
@@ -153,7 +153,7 @@ textarea.form-input{min-height:56px;resize:vertical;font-family:var(--font-mono)
 @keyframes syncPulse{0%,100%{opacity:1}50%{opacity:0.3}}
 
 /* Toast */
-.toast{position:fixed;bottom:calc(var(--safe-bot)+70px);left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--cream);padding:10px 20px;font-size:13px;font-weight:500;z-index:300;border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;animation:toastIn 0.3s ease}
+.toast{position:fixed;bottom:calc(var(--safe-bot)+100px);left:50%;transform:translateX(-50%);background:var(--surface2);color:var(--cream);padding:10px 20px;font-size:13px;font-weight:500;z-index:300;border:1px solid var(--border);font-family:var(--font-mono);font-size:12px;animation:toastIn 0.3s ease}
 @keyframes toastIn{from{transform:translateX(-50%) translateY(16px);opacity:0}}
 
 /* ====== STATS PAGE ====== */
@@ -270,6 +270,7 @@ function switchPage(p){currentPage=p;document.querySelectorAll('.page').forEach(
 
 function getApiUrl(){return localStorage.getItem(API_KEY)||''}
 function setApiUrl(u){localStorage.setItem(API_KEY,u)}
+function cleanDate(s){if(!s||s==='-')return s;s=s.toString().trim();if(/^\d{1,2}\/\d{1,2}\/\d{2,4}$/.test(s))return s;const d=new Date(s);if(!isNaN(d.getTime())){const dd=String(d.getDate()).padStart(2,'0'),mm=String(d.getMonth()+1).padStart(2,'0'),yy=d.getFullYear();return dd+'/'+mm+'/'+yy}return s.replace(/\s+\d{2}:\d{2}:\d{2}.*$/,'').trim()}
 function parseRollCount(s){if(!s||!s.trim())return 0;let t=0;s.split(',').forEach(p=>{const tr=p.trim();if(!tr)return;if(/^\d{1,2}[.\/-]\d{1,2}[.\/-]\d{2,4}$/.test(tr))return;const m=tr.match(/^(\d+)/);if(m){const n=parseInt(m[1]);if(n>100)return;t+=n}});return t}
 function parseMaxRolls(s){if(!s||s==='-'||s==='')return null;const m=s.match(/(\d+)/);return m?parseInt(m[1]):null}
 function parseDateSort(d){if(!d||d==='-')return 0;const p=d.split('/');if(p.length===3)return new Date(p[2],p[1]-1,p[0]).getTime();return 0}
@@ -281,7 +282,7 @@ function setSyncing(on){document.getElementById('syncBar').className=on?'sync-ba
 function saveLocal(){localStorage.setItem(STORAGE_KEY,JSON.stringify(batches))}
 function loadLocal(){const d=localStorage.getItem(STORAGE_KEY);if(d){batches=JSON.parse(d);return true}return false}
 
-async function syncFromSheet(){const url=getApiUrl();if(!url){showToast('Set Script URL in ⚙');return}setSyncing(true);try{const r=await fetch(url+'?action=read');const d=await r.json();if(d.success){batches=d.data.map((b,i)=>({...b,id:b.row||(i+1)}));saveLocal();renderAll();showToast('Synced '+batches.length+' batches')}else showToast('Error: '+(d.error||'Unknown'))}catch(e){showToast('Offline — using cache');console.error(e)}setSyncing(false)}
+async function syncFromSheet(){const url=getApiUrl();if(!url){showToast('Set Script URL in ⚙');return}setSyncing(true);try{const r=await fetch(url+'?action=read');const d=await r.json();if(d.success){batches=d.data.map((b,i)=>({...b,id:b.row||(i+1),mixDate:cleanDate(b.mixDate)}));saveLocal();renderAll();showToast('Synced '+batches.length+' batches')}else showToast('Error: '+(d.error||'Unknown'))}catch(e){showToast('Offline — using cache');console.error(e)}setSyncing(false)}
 async function pushToSheet(action,payload){const url=getApiUrl();if(!url)return false;setSyncing(true);try{const o=action==='read'?{}:{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify(payload)};const r=await fetch(url+'?action='+action,o);const d=await r.json();setSyncing(false);return d.success}catch(e){setSyncing(false);return false}}
 
 async function addBatch(b){b.id=Date.now();batches.push(b);saveLocal();renderAll();const s=await pushToSheet('add',b);if(s){showToast('Added & synced');syncFromSheet()}else if(getApiUrl())showToast('Added locally');else showToast('Added')}
