@@ -35,7 +35,7 @@ body::before{content:'';position:fixed;inset:0;background:var(--grain);pointer-e
 input,select,textarea,button{font-family:inherit}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+20px);padding-bottom:300px}
+.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+72px);padding-bottom:300px}
 .page{display:none}.page.active{display:block}
 
 /* Bottom nav */
@@ -47,8 +47,8 @@ input,select,textarea,button{font-family:inherit}
 /* Header */
 .header{margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border)}
 .header-row{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:2px}
-.brand{font-family:var(--font-mono);font-size:10px;color:var(--text4);font-weight:500;letter-spacing:0.22em;text-transform:uppercase}
-.title{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--cream);letter-spacing:-0.02em;line-height:1.1;margin-top:4px}
+.brand{font-family:var(--font-mono);font-size:11px;color:var(--amber);font-weight:500;letter-spacing:0.22em;text-transform:uppercase}
+.title{font-family:var(--font-display);font-size:28px;font-weight:600;color:var(--cream);letter-spacing:-0.02em;line-height:1.1;margin-top:6px}
 .header-actions{display:flex;gap:6px;align-items:flex-end;padding-bottom:4px}
 .icon-btn{width:36px;height:36px;border-radius:50%;border:1px solid var(--border);background:transparent;color:var(--text3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all 0.2s}
 .icon-btn:hover{border-color:var(--text3);color:var(--text)}
@@ -340,8 +340,8 @@ function renderStatsPage(){
   document.getElementById('brandList').innerHTML=Object.values(brands).sort((a,b)=>b.count-a.count).slice(0,12).map(br=>`<div class="brand-row"><span class="brand-name">${br.name}</span><span class="brand-count">${br.count}×</span></div>`).join('');
 
   // Lifespans
-  const lifespans=[];
-  batches.forEach(b=>{if(b.status!=='Discarded')return;const mixD=parseDate(b.mixDate);if(!mixD)return;const parts=(b.rolls||'').split(',').filter(r=>r.trim());if(parts.length<2)return;let lastDate=mixD;parts.forEach(r=>{const dm=r.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);if(dm){let yr=parseInt(dm[3]);if(yr<100)yr+=2000;const d=new Date(yr,parseInt(dm[2])-1,parseInt(dm[1]));if(d>lastDate)lastDate=d}});const days=Math.floor((lastDate-mixD)/864e5);if(days>0)lifespans.push({...b,days,endDate:lastDate})});
+  const lifespans=[],now=new Date();
+  batches.forEach(b=>{if(b.status!=='Discarded')return;const mixD=parseDate(b.mixDate);if(!mixD)return;const parts=(b.rolls||'').split(',').filter(r=>r.trim());if(parts.length<2)return;let lastDate=mixD;parts.forEach(r=>{const dm=r.match(/(\d{1,2})[./](\d{1,2})[./](\d{2,4})/);if(dm){let yr=parseInt(dm[3]);if(yr<100)yr+=2000;const d=new Date(yr,parseInt(dm[2])-1,parseInt(dm[1]));if(d>lastDate&&d<=now)lastDate=d}});const days=Math.floor((lastDate-mixD)/864e5);if(days>0)lifespans.push({...b,days,endDate:lastDate})});
   lifespans.sort((a,b)=>b.days-a.days);
 
   const renderLS=(arr,isShort)=>arr.map(l=>{const kc=kitClass(l.kit);return`<div class="ls-row"><div><div class="ls-info"><span class="ls-kit ${kc}">${l.kit}</span><span class="ls-chem">${l.chem}</span></div><div class="ls-dates">${l.mixDate} → ${l.endDate.toLocaleDateString('en-GB')}</div></div><div style="text-align:right"><div class="ls-days ${isShort?'short':''}">${l.days}</div><div class="ls-days-lbl">days</div></div></div>`}).join('')||'<div class="empty" style="padding:16px">Not enough data</div>';
