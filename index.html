@@ -35,8 +35,8 @@ body::before{content:'';position:fixed;inset:0;background:var(--grain);pointer-e
 input,select,textarea,button{font-family:inherit}
 ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
 
-.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:calc(var(--safe-top)+72px);padding-bottom:300px}
-.page{display:none}.page.active{display:block}
+.app{max-width:540px;margin:0 auto;padding:0 20px;padding-top:64px;padding-bottom:300px}
+.page{display:none}.page.active{display:block;padding-top:12px}
 
 /* Bottom nav */
 .bottom-nav{position:fixed;bottom:0;left:0;right:0;background:rgba(14,12,10,0.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--border);display:flex;justify-content:center;padding-bottom:var(--safe-bot);z-index:50}
@@ -157,7 +157,7 @@ textarea.form-input{min-height:56px;resize:vertical;font-family:var(--font-mono)
 @keyframes toastIn{from{transform:translateX(-50%) translateY(16px);opacity:0}}
 
 /* ====== STATS PAGE ====== */
-.stats-header{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--cream);margin-bottom:6px;letter-spacing:-0.02em}
+.stats-header{font-family:var(--font-display);font-size:32px;font-weight:600;color:var(--cream);margin-bottom:6px;letter-spacing:-0.02em;padding-top:8px}
 .stats-sub{font-family:var(--font-mono);font-size:11px;color:var(--text4);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:28px}
 .stats-section{margin-bottom:32px}
 .section-title{font-family:var(--font-display);font-size:18px;font-weight:600;color:var(--text2);margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
