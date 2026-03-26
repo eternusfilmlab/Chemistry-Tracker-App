@@ -1,4 +1,4 @@
-const CACHE_NAME = 'eternus-chem-v5';
+const CACHE_NAME = 'eternus-chem-v6';
 const ASSETS = [
   './',
   './index.html',
