@@ -22,7 +22,7 @@
  */
 
 // Configuration
-const SHEET_NAME = 'Sheet1'; // Change if your sheet tab has a different name
+const SHEET_NAME = 'Chemistry Tracker'; // Change if your sheet tab has a different name
 
 function doGet(e) {
   return handleRequest(e);
